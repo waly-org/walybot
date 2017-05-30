@@ -22,6 +22,7 @@ defmodule Walybot.Mixfile do
   defp deps do
     [
       {:httpoison, "~> 0.11.2"},
+      {:poison, "~> 3.0"},
     ]
   end
 end
