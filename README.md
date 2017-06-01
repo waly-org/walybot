@@ -1,19 +1,21 @@
 # Walybot
 
-**TODO: Add description**
+A [telegram bot](https://core.telegram.org/bots/api) that helps to translate messages for the [waly](http://waly.org/#!/home/main) project.
 
-## Installation
+## Setup
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `walybot` to your list of dependencies in `mix.exs`:
+First you need to register your bot.
 
-```elixir
-def deps do
-  [{:walybot, "~> 0.1.0"}]
-end
+* login to telegram
+* start a conversation with [BotFather](https://core.telegram.org/bots#6-botfather)
+* send `/newbot` and copy the bot token into your `config/config.exs` file
+* send `/setuserpic`, select your bot and then send the `waly_profile.png` in this repo to set the profile picture
+* now disable privacy mode by sending `/setprivacy` then selecting the bot and clicking disabled
+  * makes it so the bot can see all messages in a group chat automatically
+* now setup the commands to give users helpful autocorrect when talking to the bot by sending `/setcommands`, select your bot, then paste in the text below
+
+__WalyBot Commands__
+
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/walybot](https://hexdocs.pm/walybot).
-
+translate - volunteer to translate a message right now
+```
