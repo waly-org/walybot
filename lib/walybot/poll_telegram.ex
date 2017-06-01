@@ -13,7 +13,9 @@ defmodule Walybot.PollTelegram do
   end
 
   def handle_info(:timeout, state) do
-    IO.puts "go check for new updates"
+    Telegram.Bot.process_all_outstanding_updates(fn(update) ->
+      IO.inspect(update)
+    end)
     {:noreply, state, @poll_interval}
   end
   def handle_info(other, state) do
