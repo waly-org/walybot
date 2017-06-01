@@ -28,4 +28,10 @@ defmodule Telegram.Bot do
         process_all_outstanding_updates(fun, max_update_id + 1)
     end
   end
+
+  def send_reply(%{"message" => %{"message_id" => mid, "chat" => %{"id" => cid}}}, text) do
+    data = %{chat_id: cid, text: text, reply_to_message_id: mid}
+    body = Poison.encode!(data) |> IO.inspect
+    post("sendMessage", body, [{"Content-Type", "application/json"}])
+  end
 end
