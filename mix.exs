@@ -21,8 +21,10 @@ defmodule Walybot.Mixfile do
 
   defp deps do
     [
+      {:ecto, "~> 2.1"},
       {:httpoison, "~> 0.11.2"},
       {:poison, "~> 3.0"},
+      {:postgrex, "~> 0.13"},
     ]
   end
 end
