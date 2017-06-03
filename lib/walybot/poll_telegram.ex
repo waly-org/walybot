@@ -2,7 +2,7 @@ defmodule Walybot.PollTelegram do
   use GenServer
   require Logger
 
-  @poll_interval 5_000
+  @poll_interval 1_000
 
   def start_link do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
@@ -21,11 +21,9 @@ defmodule Walybot.PollTelegram do
     {:noreply, state, @poll_interval}
   end
 
-  def process_update(%{"message" => %{"text" => text}}=update) do
-    Logger.info "replying to #{text}"
-    Telegram.Bot.send_reply(update, "TODO: translate this")
-  end
   def process_update(update) do
-    Logger.info "not sure what to do with this #{inspect update}"
+    # TODO: instead of raising an exception when we get {:error, reason}, we need a graceful way of telling
+    # the poller to stop and give up?
+    :ok = Walybot.Switchboard.update(update)
   end
 end
