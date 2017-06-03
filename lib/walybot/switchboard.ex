@@ -19,7 +19,7 @@ defmodule Walybot.Switchboard do
     Logger.info "not sure what to do with #{inspect update}"
   end
 
-  defp text_message("/addTranslator"<>_=command, update), do: Walybot.Command.AddTranslator.process(command, update)
+  defp text_message("/addtranslator"<>_=command, update), do: Walybot.Command.AddTranslator.process(command, update)
   defp text_message(_, update) do
     # TODO: Maybe we should do some kind of 404 logic here?
     Logger.info "not sure what to do with #{inspect update}"

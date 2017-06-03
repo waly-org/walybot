@@ -17,5 +17,5 @@ First you need to register your bot.
 __WalyBot Commands__
 
 ```
-translate - volunteer to translate a message right now
+addtranslator - *Admin Only* adds a new translator so they are authorized to start receiving messages
 ```
