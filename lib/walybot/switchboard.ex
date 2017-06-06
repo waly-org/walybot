@@ -15,7 +15,7 @@ defmodule Walybot.Switchboard do
   require Logger
 
   def update(%{"message" => %{"text" => text}}=update), do: text_message(text, update)
-  def updates(update) do
+  def update(update) do
     Logger.info "not sure what to do with #{inspect update}"
   end
 
