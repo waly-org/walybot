@@ -29,6 +29,12 @@ defmodule Telegram.Bot do
     end
   end
 
+  def send_message(%{"message" => %{"chat" => %{"id" => cid}}}, text) do
+    data = %{chat_id: cid, text: text}
+    body = Poison.encode!(data)
+    post("sendMessage", body, [{"Content-Type", "application/json"}])
+  end
+
   def send_reply(%{"message" => %{"message_id" => mid, "chat" => %{"id" => cid}}}, text) do
     data = %{chat_id: cid, text: text, reply_to_message_id: mid}
     body = Poison.encode!(data)

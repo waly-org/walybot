@@ -20,6 +20,12 @@ defmodule Walybot.Switchboard do
   end
 
   defp text_message("/addtranslator"<>_=command, update), do: Walybot.Command.AddTranslator.process(command, update)
+  defp text_message(_, %{"message" => %{"chat" => %{"type" => "private"}}}=update) do
+    case Telegram.Bot.send_message(update, "😕 Sorry, I don't understand⁇") do
+      {:ok, _} -> :ok
+      {:error, reason} -> {:error, reason}
+    end
+  end
   defp text_message(_, update) do
     # TODO: Maybe we should do some kind of 404 logic here?
     Logger.info "not sure what to do with #{inspect update}"
