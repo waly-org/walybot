@@ -21,6 +21,7 @@ defmodule Walybot.Mixfile do
 
   defp deps do
     [
+      {:appsignal, "~> 1.0"},
       {:ecto, "~> 2.1"},
       {:httpoison, "~> 0.11.2"},
       {:poison, "~> 3.0"},
