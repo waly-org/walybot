@@ -4,20 +4,21 @@ defmodule Walybot.Application do
   @moduledoc false
 
   use Application
+  import Supervisor.Spec, warn: false
 
   def start(_type, _args) do
-    import Supervisor.Spec, warn: false
-
-    # Define workers and child supervisors to be supervised
     children = [
       supervisor(Walybot.Repo, []),
-      worker(Walybot.PollTelegram, []),
       Plug.Adapters.Cowboy.child_spec(:http, Walybot.Plug, [], [port: 4000]),
     ]
+    children = add_poller(children, Mix.env)
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Walybot.Supervisor]
     Supervisor.start_link(children, opts)
   end
+
+  defp add_poller(children, :dev), do: children ++ [worker(Walybot.PollTelegram, [])]
+  defp add_poller(children, _), do: children
 end
