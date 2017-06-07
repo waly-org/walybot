@@ -11,6 +11,7 @@ defmodule Walybot.Application do
     # Define workers and child supervisors to be supervised
     children = [
       worker(Walybot.PollTelegram, []),
+      worker(Plug.Adapters.Cowboy, [Walybot.Plug, []], function: :http),
       supervisor(Walybot.Repo, []),
     ]
 
