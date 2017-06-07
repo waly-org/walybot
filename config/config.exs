@@ -13,4 +13,6 @@ config :walybot, Walybot.Repo,
 
 config :walybot, ecto_repos: [Walybot.Repo]
 
+config :walybot, webhook_endpoint: System.get_env("WEBHOOK_ENDPOINT") || "/webhook"
+
 config :walybot, :telegram, bot_token: System.get_env("TELEGRAM_BOT_TOKEN")
