@@ -8,15 +8,15 @@ defmodule Walybot.Plug do
   plug :match
   plug :dispatch
 
-  match Application.get_env(:walybot, :webhook_endpoint) do
-    case conn.body_params do
-      update when is_map(update) -> instrument_webhook(conn)
-      _ -> conn |> put_resp_content_type("text/plain") |> send_resp(400, "Expected an Update")
-    end
-  end
-
   match _ do
-    conn |> send_resp(404, "Not Found\n")
+    if conn.request_path == Application.get_env(:walybot, :webhook_endpoint) do
+      case conn.body_params do
+        update when is_map(update) -> instrument_webhook(conn)
+        _ -> conn |> put_resp_content_type("text/plain") |> send_resp(400, "Expected an Update")
+      end
+    else
+      conn |> send_resp(404, "Not Found\n")
+    end
   end
 
   defp instrument_webhook(conn) do
