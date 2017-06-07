@@ -29,7 +29,7 @@ defmodule Walybot.PollTelegram do
     {microseconds, value} = :timer.tc(fn ->
       :ok = Walybot.Switchboard.update(update)
     end)
-    Appsignal.add_distribution_value("update_processing_time", microseconds)
+    Appsignal.add_distribution_value("update_processing_time", microseconds / 1000.0)
     value
   end
 end
