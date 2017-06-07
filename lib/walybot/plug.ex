@@ -1,17 +1,17 @@
 defmodule Walybot.Plug do
-  import Plug.Conn
+  use Plug.Router
 
-  def init(_opts) do
-    Application.get_env(:walybot, :webhook_endpoint)
+  plug Plug.Logger
+  plug Plug.Parsers, parsers: [:json],
+                     json_decoder: Poison
+  plug :match
+  plug :dispatch
+
+  match Application.get_env(:walybot, :webhook_endpoint) do
+    conn |> put_resp_content_type("text/plain") |> send_resp(200, "Got It!\n")
   end
 
-  def call(%{request_path: endpoint}=conn, endpoint) do
-    conn
-    |> put_resp_content_type("text/plain")
-    |> send_resp(200, "Got It")
-  end
-
-  def call(conn, _endpoint) do
-    conn |> put_resp_content_type("text/plain") |> send_resp(404, "Not Found")
+  match _ do
+    conn |> send_resp(404, "Not Found\n")
   end
 end

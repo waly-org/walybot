@@ -10,9 +10,9 @@ defmodule Walybot.Application do
 
     # Define workers and child supervisors to be supervised
     children = [
-      worker(Walybot.PollTelegram, []),
-      worker(Plug.Adapters.Cowboy, [Walybot.Plug, []], function: :http),
       supervisor(Walybot.Repo, []),
+      worker(Walybot.PollTelegram, []),
+      Plug.Adapters.Cowboy.child_spec(:http, Walybot.Plug, [], [port: 4000]),
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
