@@ -18,4 +18,5 @@ __WalyBot Commands__
 
 ```
 addtranslator - *Admin Only* adds a new translator so they are authorized to start receiving messages
+listtranslators - *Admin Only* responds with a list of all translators
 ```

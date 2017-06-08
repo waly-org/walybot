@@ -20,6 +20,7 @@ defmodule Walybot.Switchboard do
   end
 
   defp text_message("/addtranslator"<>_=command, update), do: Walybot.Command.AddTranslator.process(command, update)
+  defp text_message("/listtranslators"<>_, update), do: Walybot.Command.ListTranslators.process("/listtranslators", update)
   defp text_message(_, %{"message" => %{"chat" => %{"type" => "private"}}}=update) do
     case Telegram.Bot.send_message(update, "😕 Sorry, I don't understand⁇") do
       {:ok, _} -> :ok
