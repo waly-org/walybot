@@ -1,7 +1,11 @@
 defmodule Walybot.Command.Helpers do
+  import Ecto.Query
+  alias Walybot.{Repo,Translator}
+
   def handle_error(update, fun) do
     case fun.() do
       :ok -> :ok
+      {:ok, _data} -> :ok
       {:error, reason} ->
         case Telegram.Bot.send_message(update, "😢 #{reason}") do
           {:ok, _message} -> :ok
@@ -10,9 +14,16 @@ defmodule Walybot.Command.Helpers do
     end
   end
 
-  def lookup_translator(username) do
-    alias Walybot.{Repo,Translator}
+  def lookup_translator_by_id(str) when is_binary(str), do: str |> String.to_integer |> lookup_translator_by_id
+  def lookup_translator_by_id(id) do
     import Ecto.Query
+    case Translator |> where(id: ^id) |> Repo.one do
+      nil -> {:error, "translator not found"}
+      translator -> {:ok, translator}
+    end
+  end
+
+  def lookup_translator(username) do
     case Translator |> where(username: ^username) |> Repo.one do
       nil -> {:error, "@#{username} not found"}
       record -> {:ok, record}

@@ -15,11 +15,18 @@ defmodule Walybot.Switchboard do
   require Logger
 
   def update(%{"message" => %{"text" => text}}=update), do: text_message(text, update)
+  def update(%{"callback_query" => query}), do: callback_query(query)
   def update(update) do
     Logger.info "not sure what to do with #{inspect update}"
   end
 
-  defp text_message("/activate"<>_=command, update), do: Walybot.Command.ActivateTranslator.process(command, update)
+  defp callback_query(%{"message" => %{"text" => "activate"<>_}}=query), do: Walybot.Command.ActivateTranslator.callback(query)
+  defp callback_query(query) do
+    Logger.info "unhandled callback query: #{inspect query}"
+    :ok
+  end
+
+  defp text_message("/activate"<>_, update), do: Walybot.Command.ActivateTranslator.command(update)
   defp text_message("/add"<>_=command, update), do: Walybot.Command.AddTranslator.process(command, update)
   defp text_message("/deactivate"<>_=command, update), do: Walybot.Command.DeaactivateTranslator.process(command, update)
   defp text_message("/list"<>_, update), do: Walybot.Command.ListTranslators.process("/listtranslators", update)
