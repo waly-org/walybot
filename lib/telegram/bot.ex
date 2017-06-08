@@ -29,6 +29,11 @@ defmodule Telegram.Bot do
     end
   end
 
+  def edit_message(%{"message" => %{"chat" => %{"id" => cid}, "message_id" => mid}}, message) do
+    data = Map.merge(%{chat_id: cid, message_id: mid}, message)
+    post_and_parse("editMessageText", data)
+  end
+
   def send_message(%{"message" => %{"chat" => %{"id" => cid}}}, text, extra_message_options \\ %{}) do
     data = Map.merge(%{chat_id: cid, text: text}, extra_message_options)
     post_and_parse("sendMessage", data)
@@ -52,7 +57,13 @@ defmodule Telegram.Bot do
 
   defp validate(%{"ok" => true, "result" => result}), do: {:ok, result}
   defp validate(parsed) do
-    reason = "[#{Map.get(parsed, "error_code")}] #{Map.get(parsed, "description")}"
-    {:error, reason}
+    error_code = Map.get(parsed, "error_code")
+    description = Map.get(parsed, "description")
+    if error_code == 400 && String.contains?(description, "message is not modified") do
+      {:ok, :unmodified}
+    else
+      reason = "[#{Map.get(parsed, "error_code")}] #{Map.get(parsed, "description")}"
+      {:error, reason}
+    end
   end
 end
