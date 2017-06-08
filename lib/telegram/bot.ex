@@ -29,15 +29,30 @@ defmodule Telegram.Bot do
     end
   end
 
-  def send_message(%{"message" => %{"chat" => %{"id" => cid}}}, text) do
-    data = %{chat_id: cid, text: text}
-    body = Poison.encode!(data)
-    post("sendMessage", body, [{"Content-Type", "application/json"}])
+  def send_message(%{"message" => %{"chat" => %{"id" => cid}}}, text, extra_message_options \\ %{}) do
+    data = Map.merge(%{chat_id: cid, text: text}, extra_message_options)
+    post_and_parse("sendMessage", data)
   end
 
-  def send_reply(%{"message" => %{"message_id" => mid, "chat" => %{"id" => cid}}}, text) do
-    data = %{chat_id: cid, text: text, reply_to_message_id: mid}
+  def send_reply(%{"message" => %{"message_id" => mid}}=update, text) do
+    send_message(update, text, %{reply_to_message_id: mid})
+  end
+
+  def post_and_parse(method, data) do
     body = Poison.encode!(data)
-    post("sendMessage", body, [{"Content-Type", "application/json"}])
+    {microseconds, result} = :timer.tc(fn ->
+      post(method, body, [{"Content-Type", "application/json"}])
+    end)
+    Appsignal.add_distribution_value("api_request_duration", microseconds / 1000.0)
+    with {:ok, response} <- result,
+         {:ok, parsed} <- Poison.decode(response.body),
+         {:ok, successful_entity} <- validate(parsed),
+    do:  {:ok, successful_entity}
+  end
+
+  defp validate(%{"ok" => true, "result" => result}), do: {:ok, result}
+  defp validate(parsed) do
+    reason = "[#{Map.get(parsed, "error_code")}] #{Map.get(parsed, "description")}"
+    {:error, reason}
   end
 end
