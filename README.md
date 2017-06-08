@@ -17,7 +17,8 @@ First you need to register your bot.
 __WalyBot Commands__
 
 ```
-addtranslator - *Admin Only* adds a new translator so they are authorized to start receiving messages
-deactivate_translators - *Admin Only* de-activates a translator
-listtranslator - *Admin Only* responds with a list of all translators
+activate - *Admin Only* activates a translator
+add - *Admin Only* adds a new translator so they are authorized to start translating
+deactivate - *Admin Only* de-activates a translator
+list - *Admin Only* responds with a list of all translators
 ```

@@ -10,6 +10,15 @@ defmodule Walybot.Command.Helpers do
     end
   end
 
+  def lookup_translator(username) do
+    alias Walybot.{Repo,Translator}
+    import Ecto.Query
+    case Translator |> where(username: ^username) |> Repo.one do
+      nil -> {:error, "@#{username} not found"}
+      record -> {:ok, record}
+    end
+  end
+
   def parse_username(cmd, text) do
     prefix = "#{cmd} @"
     case String.starts_with?(text, prefix) do

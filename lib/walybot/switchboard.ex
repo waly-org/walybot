@@ -19,9 +19,10 @@ defmodule Walybot.Switchboard do
     Logger.info "not sure what to do with #{inspect update}"
   end
 
-  defp text_message("/addtranslator"<>_=command, update), do: Walybot.Command.AddTranslator.process(command, update)
-  defp text_message("/deactivate_translator"<>_=command, update), do: Walybot.Command.DeaactivateTranslator.process(command, update)
-  defp text_message("/listtranslators"<>_, update), do: Walybot.Command.ListTranslators.process("/listtranslators", update)
+  defp text_message("/activate"<>_=command, update), do: Walybot.Command.ActivateTranslator.process(command, update)
+  defp text_message("/add"<>_=command, update), do: Walybot.Command.AddTranslator.process(command, update)
+  defp text_message("/deactivate"<>_=command, update), do: Walybot.Command.DeaactivateTranslator.process(command, update)
+  defp text_message("/list"<>_, update), do: Walybot.Command.ListTranslators.process("/listtranslators", update)
   defp text_message(_, %{"message" => %{"chat" => %{"type" => "private"}}}=update) do
     case Telegram.Bot.send_message(update, "😕 Sorry, I don't understand⁇") do
       {:ok, _} -> :ok

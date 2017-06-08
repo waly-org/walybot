@@ -8,7 +8,7 @@ defmodule Walybot.Command.AddTranslator do
   end
 
   def attempt_to_add_translator(text, update) do
-    with {:ok, username} <- parse_username("/addtranslator", text),
+    with {:ok, username} <- parse_username("/add", text),
          {:ok, translator} <- create_or_update_translator(username),
          {:ok, _message} <- Telegram.Bot.send_reply(update, "👍🏽 #{translator.username} is #{active_or_deactivated(translator)}"),
     do: :ok
