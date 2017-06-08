@@ -19,5 +19,5 @@ __WalyBot Commands__
 ```
 addtranslator - *Admin Only* adds a new translator so they are authorized to start receiving messages
 deactivate_translators - *Admin Only* de-activates a translator
-listtranslators - *Admin Only* responds with a list of all translators
+listtranslator - *Admin Only* responds with a list of all translators
 ```
