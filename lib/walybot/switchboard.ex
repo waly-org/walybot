@@ -21,6 +21,7 @@ defmodule Walybot.Switchboard do
   end
 
   defp callback_query(%{"message" => %{"text" => "activate"<>_}}=query), do: Walybot.Command.ActivateTranslator.callback(query)
+  defp callback_query(%{"message" => %{"text" => "deactivate"<>_}}=query), do: Walybot.Command.DeactivateTranslator.callback(query)
   defp callback_query(query) do
     Logger.info "unhandled callback query: #{inspect query}"
     :ok

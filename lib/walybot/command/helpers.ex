@@ -56,10 +56,8 @@ defmodule Walybot.Command.Helpers do
     end
   end
 
-  def show_translator_list_keyboard(update) do
-    translator_buttons = Translator
-                         |> where(is_authorized: false)
-                         |> Repo.all
+  def show_translator_list_keyboard(update, translators, prompt) do
+    translator_buttons = translators
                          |> Enum.map(fn(t) -> %{text: "@#{t.username}", callback_data: Integer.to_string(t.id)} end)
                          |> Enum.chunk(3, 3, [nil, nil, nil])
                          |> Enum.map(fn(buttons) ->
@@ -67,14 +65,14 @@ defmodule Walybot.Command.Helpers do
                          end)
 
     case translator_buttons do
-      [] -> Telegram.Bot.send_message(update, "all translators are active 🎉🤖")
+      [] -> Telegram.Bot.send_message(update, "no translators available 🎉🤖")
       _ ->
         message_options = %{
           reply_markup: %{
             inline_keyboard: translator_buttons
           }
         }
-        Telegram.Bot.send_message(update, "activate - select which translator you want to activate", message_options)
+        Telegram.Bot.send_message(update, prompt, message_options)
     end
   end
 end
