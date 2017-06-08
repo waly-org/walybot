@@ -16,7 +16,11 @@ config :walybot, ecto_repos: [Walybot.Repo]
 config :walybot, webhook_endpoint: System.get_env("WEBHOOK_ENDPOINT") || "/webhook"
 
 bot_token = case System.get_env("TELEGRAM_BOT_TOKEN") do
-              nil -> ".telegram_bot_token" |> File.read! |> String.strip
+              nil ->
+                case File.read(".telegram_bot_token") do
+                  {:ok, str} -> str |> String.strip
+                  {:error, _reason} -> "DEFAULT_BOT_TOKEN"
+                end
               str -> str
             end
 config :walybot, :telegram, bot_token: bot_token
