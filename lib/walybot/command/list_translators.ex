@@ -1,7 +1,7 @@
 defmodule Walybot.Command.ListTranslators do
   alias Walybot.{Repo,Translator}
 
-  def process(_text, update) do
+  def command(_text, update) do
     translators = Translator |> Repo.all |> Enum.group_by(fn(translator) -> translator.is_authorized end)
     msg = [
       "== active translators\n",

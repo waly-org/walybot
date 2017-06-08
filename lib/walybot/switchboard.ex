@@ -27,9 +27,9 @@ defmodule Walybot.Switchboard do
   end
 
   defp text_message("/activate"<>_, update), do: Walybot.Command.ActivateTranslator.command(update)
-  defp text_message("/add"<>_=command, update), do: Walybot.Command.AddTranslator.process(command, update)
-  defp text_message("/deactivate"<>_=command, update), do: Walybot.Command.DeaactivateTranslator.process(command, update)
-  defp text_message("/list"<>_, update), do: Walybot.Command.ListTranslators.process("/listtranslators", update)
+  defp text_message("/add"<>_=command, update), do: Walybot.Command.AddTranslator.command(command, update)
+  defp text_message("/deactivate"<>_=command, update), do: Walybot.Command.DeactivateTranslator.command(command, update)
+  defp text_message("/list"<>_, update), do: Walybot.Command.ListTranslators.command("/list", update)
   defp text_message(_, %{"message" => %{"chat" => %{"type" => "private"}}}=update) do
     Logger.info "#{inspect update}"
     case Telegram.Bot.send_message(update, "😕 Sorry, I don't understand⁇") do

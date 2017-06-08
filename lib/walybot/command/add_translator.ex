@@ -3,7 +3,7 @@ defmodule Walybot.Command.AddTranslator do
   alias Walybot.{Repo,Translator}
   import Walybot.Command.Helpers
 
-  def process(text, update) do
+  def command(text, update) do
     handle_error(update, fn -> attempt_to_add_translator(text, update) end)
   end
 

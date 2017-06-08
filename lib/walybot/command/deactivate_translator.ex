@@ -1,8 +1,8 @@
-defmodule Walybot.Command.DeaactivateTranslator do
+defmodule Walybot.Command.DeactivateTranslator do
   alias Walybot.{Repo,Translator}
   import Walybot.Command.Helpers
 
-  def process(text, update) do
+  def command(text, update) do
     handle_error(update, fn -> attempt_to_deactivate(text, update) end)
   end
 
