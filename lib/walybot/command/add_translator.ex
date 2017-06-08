@@ -4,7 +4,7 @@ defmodule Walybot.Command.AddTranslator do
   import Walybot.Command.Helpers
 
   def command(text, update) do
-    handle_error(update, fn -> attempt_to_add_translator(text, update) end)
+    handle_command_error(update, fn -> attempt_to_add_translator(text, update) end)
   end
 
   def attempt_to_add_translator(text, update) do

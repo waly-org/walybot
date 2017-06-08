@@ -3,7 +3,7 @@ defmodule Walybot.Command.DeactivateTranslator do
   import Walybot.Command.Helpers
 
   def command(text, update) do
-    handle_error(update, fn -> attempt_to_deactivate(text, update) end)
+    handle_command_error(update, fn -> attempt_to_deactivate(text, update) end)
   end
 
   defp attempt_to_deactivate(text, update) do
