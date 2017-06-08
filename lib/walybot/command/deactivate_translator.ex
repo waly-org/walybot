@@ -1,20 +1,13 @@
 defmodule Walybot.Command.DeaactivateTranslator do
   alias Walybot.{Repo,Translator}
-  alias Walybot.Command.AddTranslator
+  import Walybot.Command.Helpers
 
   def process(text, update) do
-    case attempt_to_deactivate(text, update) do
-      :ok -> :ok
-      {:error, reason} ->
-        case Telegram.Bot.send_message(update, "😢 #{reason}") do
-          {:ok, _message} -> :ok
-          {:error, reason} -> {:error, reason}
-        end
-    end
+    handle_error(update, fn -> attempt_to_deactivate(text, update) end)
   end
 
   defp attempt_to_deactivate(text, update) do
-    with {:ok, username} <- AddTranslator.parse_username("/deactivate_translator", text),
+    with {:ok, username} <- parse_username("/deactivate_translator", text),
          {:ok, translator} <- lookup_translator(username),
          {:ok, translator} <- deactivate(translator),
          {:ok, _message} <- Telegram.Bot.send_message(update, "👍🏽 #{translator.username} has been de-activated!"),
