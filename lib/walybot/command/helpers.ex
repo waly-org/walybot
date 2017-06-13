@@ -7,6 +7,7 @@ defmodule Walybot.Command.Helpers do
       :ok -> :ok
       {:ok, _data} -> :ok
       {:error, reason} ->
+        reason = error_message(reason)
         case Telegram.Bot.edit_message(query, "😢 #{reason}") do
           {:ok, _message} -> :ok
           {:error, reason} -> {:error, reason}
@@ -19,12 +20,28 @@ defmodule Walybot.Command.Helpers do
       :ok -> :ok
       {:ok, _data} -> :ok
       {:error, reason} ->
+        reason = error_message(reason)
         case Telegram.Bot.send_message(update, "😢 #{reason}") do
           {:ok, _message} -> :ok
           {:error, reason} -> {:error, reason}
         end
     end
   end
+
+  def error_message(%Ecto.Changeset{}=changeset) do
+    import Ecto.Changeset, only: [traverse_errors: 2]
+    changeset
+    |> traverse_errors(fn {msg, opts} ->
+      Enum.reduce(opts, msg, fn {key, value}, acc ->
+        String.replace(acc, "%{#{key}}", to_string(value))
+      end)
+    end)
+    |> Enum.map(fn({key, messages}) ->
+      "#{key}: #{Enum.join(messages, ", ")}"
+    end)
+    |> Enum.join(", ")
+  end
+  def error_message(reason), do: reason
 
   def lookup_translator_by_id(str) when is_binary(str), do: str |> String.to_integer |> lookup_translator_by_id
   def lookup_translator_by_id(id) do
