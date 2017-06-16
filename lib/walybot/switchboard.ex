@@ -36,7 +36,12 @@ defmodule Walybot.Switchboard do
   defp text_message(_, %{"message" => %{"chat" => %{"type" => "group"}}}=update) do
     Walybot.Conversations.queue_for_translation(update)
   end
+  defp text_message(_, %{"message" => %{"chat" => %{"type" => "group"}}}=update) do
+    Logger.info "TODO: translate this #{inspect update}"
+    :ok
+  end
   defp text_message(_, update) do
+    Appsignal.send_error(%RuntimeError{}, "Received unexpected text message", System.stacktrace(), %{update: update})
     # TODO: Maybe we should do some kind of 404 logic here?
     Logger.info "not sure what to do with #{inspect update}"
     :ok
