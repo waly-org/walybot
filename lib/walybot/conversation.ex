@@ -9,12 +9,10 @@ defmodule Walybot.Conversation do
     timestamps()
   end
 
-  def changeset(params, translator \\ %Walybot.Translator{}) do
-    translator
-    |> cast(params, [:username, :is_authorized, :telegram_id])
-    |> update_change(:username, &String.downcase/1)
-    |> validate_required([:username, :is_authorized])
-    |> unique_constraint(:username)
+  def changeset(params, conversation \\ %Walybot.Conversation{}) do
+    conversation
+    |> cast(params, [:name, :needs_translation, :telegram_id])
+    |> validate_required([:name, :needs_translation, :telegram_id])
     |> unique_constraint(:telegram_id)
   end
 end
