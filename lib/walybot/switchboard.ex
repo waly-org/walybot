@@ -17,7 +17,7 @@ defmodule Walybot.Switchboard do
   def update(%{"message" => %{"text" => text}}=update), do: text_message(text, update)
   def update(%{"callback_query" => query}), do: callback_query(query)
   def update(update) do
-    Logger.info "not sure what to do with #{inspect update}"
+    Logger.info "not sure what type of message this is #{inspect update}"
   end
 
   defp callback_query(%{"message" => %{"text" => "activate"<>_}}=query), do: Walybot.Command.ActivateTranslator.callback(query)
@@ -37,6 +37,10 @@ defmodule Walybot.Switchboard do
       {:ok, _} -> :ok
       {:error, reason} -> {:error, reason}
     end
+  end
+  defp text_message(_, %{"message" => %{"chat" => %{"type" => "group"}}}=update) do
+    Logger.info "#{inspect update}"
+    Walybot.Conversations.queue_for_translation(update)
   end
   defp text_message(_, update) do
     # TODO: Maybe we should do some kind of 404 logic here?
