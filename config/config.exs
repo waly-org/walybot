@@ -9,6 +9,7 @@ config :walybot, Walybot.Repo,
   username: System.get_env("POSTGRES_USER") || "postgres",
   password: System.get_env("POSTGRES_PASSWORD"),
   hostname: System.get_env("POSTGRES_HOST") || "localhost",
+  pool_size: 3,
   ssl: postgres_ssl
 
 config :walybot, ecto_repos: [Walybot.Repo]
