@@ -35,12 +35,13 @@ defmodule Telegram.Bot do
   end
 
   def send_message(%{"message" => %{"chat" => %{"id" => cid}}}, text, extra_message_options \\ %{}) do
-    data = Map.merge(%{chat_id: cid, text: text}, extra_message_options)
+    data = Map.merge(%{chat_id: cid, text: text}, extra_message_options) |> IO.inspect
     post_and_parse("sendMessage", data)
   end
 
-  def send_reply(%{"message" => %{"message_id" => mid}}=update, text) do
-    send_message(update, text, %{reply_to_message_id: mid})
+  def send_reply(%{"message" => %{"message_id" => mid}}=update, text, extra_message_options \\ %{}) do
+    options = %{reply_to_message_id: mid} |> Map.merge(extra_message_options)
+    send_message(update, text, options)
   end
 
   def post_and_parse(method, data) do
