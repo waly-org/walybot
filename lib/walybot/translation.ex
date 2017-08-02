@@ -20,6 +20,13 @@ defmodule Walybot.Translation do
     |> validate_required([:author, :text])
   end
 
+  def update_changeset(translation, translator, translated_text) do
+    translation
+    |> cast(%{translation: translated_text, translator_id: translator.id}, [:translation, :translator_id])
+    |> assoc_constraint(:translator)
+    |> validate_required([:translation])
+  end
+
   def one_pending_translation do
     result = __MODULE__ |> where([t], is_nil(t.translation)) |> Walybot.Repo.one
     case result do

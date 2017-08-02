@@ -1,5 +1,5 @@
 defmodule Walybot.Command.GetTranslation do
-  alias Walybot.Translation
+  alias Walybot.{ExpectedTranslations,Translation}
   import Walybot.Command.Helpers
 
   def command(_text, update) do
@@ -17,6 +17,7 @@ defmodule Walybot.Command.GetTranslation do
          recent_translations <- Translation.recent_translations(translation),
          text <- format_translation_message(recent_translations, translation),
          {:ok, _message} <- Telegram.Bot.send_message(update, text, force_reply),
+         :ok <- ExpectedTranslations.expect_translation_from(translator, translation),
     do: :ok
   end
 
