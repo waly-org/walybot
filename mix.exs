@@ -24,7 +24,7 @@ defmodule Walybot.Mixfile do
       {:appsignal, "~> 1.0"},
       {:cowboy, "~> 1.1"},
       {:ecto, "~> 2.1"},
-      {:httpoison, "~> 0.11.2"},
+      {:httpoison, "~> 0.12"},
       {:poison, "~> 3.0"},
       {:postgrex, "~> 0.13"},
       {:plug, "~> 1.3"},
