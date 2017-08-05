@@ -40,13 +40,13 @@ defmodule Walybot.Plug do
     end
   end
 
-  defp set_logging_context(%{"message" => %{"from" => from}}=update) do
-    id = Map.get(from, "id")
-    name = Map.get(from, "username")
-    %Timber.Contexts.UserContext{id: id, name: name}
-    |> Timber.add_context()
-
+  defp set_logging_context(update) do
+    id = get_in(update, ["message","from","id"])
+    name = get_in(update, ["message","from","username"])
+    conversation_id = get_in(update, ["message", "chat", "id"])
+    conversation_name = get_in(update, ["message","chat","title"]) || get_in(update, ["message","chat","username"])
+    %Timber.Contexts.UserContext{id: id, name: name} |> Timber.add_context()
+    Timber.add_context(conversation: %{id: conversation_id, name: conversation_name})
     Logger.info "#{inspect update}"
   end
-  defp set_logging_context(_), do: :ok
 end
