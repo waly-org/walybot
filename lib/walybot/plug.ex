@@ -48,4 +48,5 @@ defmodule Walybot.Plug do
 
     Logger.info "#{inspect update}"
   end
+  defp set_logging_context(_), do: :ok
 end
