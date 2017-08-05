@@ -29,6 +29,7 @@ defmodule Walybot.Plug do
   end
 
   defp process_webhook(%{body_params: update}=conn) do
+    set_logging_context(update)
     case Walybot.Switchboard.update(update) do
       :ok -> conn |> send_resp(200, "OK")
       {:error, reason} ->
@@ -37,5 +38,14 @@ defmodule Walybot.Plug do
         Appsignal.send_error(%RuntimeError{}, "Failed to process update via webhook", System.stacktrace(), error_attrs)
         conn |> send_resp(500, "Failed to process update")
     end
+  end
+
+  defp set_logging_context(%{"message" => %{"from" => from}}=update) do
+    id = Map.get(from, "id")
+    name = Map.get(from, "username")
+    %Timber.Contexts.UserContext{id: id, name: name}
+    |> Timber.add_context()
+
+    Logger.info "#{inspect update}"
   end
 end
