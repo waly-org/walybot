@@ -28,6 +28,7 @@ defmodule Walybot.Mixfile do
       {:poison, "~> 3.0"},
       {:postgrex, "~> 0.13"},
       {:plug, "~> 1.3"},
+      {:timber, "~> 2.3"},
     ]
   end
 end

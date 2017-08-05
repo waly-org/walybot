@@ -25,3 +25,6 @@ bot_token = case System.get_env("TELEGRAM_BOT_TOKEN") do
               str -> str
             end
 config :walybot, :telegram, bot_token: bot_token
+
+# Import Timber, structured logging
+import_config "timber.exs"
