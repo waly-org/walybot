@@ -1,4 +1,4 @@
-FROM hqmq/alpine-elixir:0.7
+FROM hqmq/alpine-elixir:0.8
 
 ENV MIX_ENV=prod
 ADD mix.exs mix.lock ./
