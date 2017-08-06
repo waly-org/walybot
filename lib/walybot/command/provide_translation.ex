@@ -1,6 +1,7 @@
 defmodule Walybot.Command.ProvideTranslation do
   import Walybot.Command.Helpers
-  alias Walybot.{Conversation,ExpectedTranslations,Repo,Translation}
+  alias Walybot.Ecto.{Conversation,Repo,Translation}
+  alias Walybot.ExpectedTranslations
 
   def command(_text, update) do
     handle_command_error(update, fn ->

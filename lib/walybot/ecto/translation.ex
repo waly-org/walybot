@@ -1,14 +1,15 @@
-defmodule Walybot.Translation do
+defmodule Walybot.Ecto.Translation do
   use Ecto.Schema
   import Ecto.{Changeset,Query}
+  alias Walybot.Ecto.Repo
 
   schema "translations" do
     field :author, :string
     field :text, :string
     field :translation, :string
 
-    belongs_to :conversation, Walybot.Conversation
-    belongs_to :translator, Walybot.Translator
+    belongs_to :conversation, Walybot.Ecto.Conversation
+    belongs_to :translator, Walybot.Ecto.Translator
     timestamps()
   end
 
@@ -28,7 +29,7 @@ defmodule Walybot.Translation do
   end
 
   def one_pending_translation do
-    result = __MODULE__ |> where([t], is_nil(t.translation)) |> Walybot.Repo.one
+    result = __MODULE__ |> where([t], is_nil(t.translation)) |> Repo.one
     case result do
       nil -> {:error, "no pending translations"}
       translation -> {:ok, translation}
@@ -46,7 +47,7 @@ defmodule Walybot.Translation do
     |> where([t], t.inserted_at < ^inserted_at)
     |> order_by(desc: :inserted_at)
     |> limit(2)
-    |> Walybot.Repo.all
+    |> Repo.all
     |> Enum.reverse
   end
 end

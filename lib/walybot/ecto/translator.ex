@@ -1,4 +1,4 @@
-defmodule Walybot.Translator do
+defmodule Walybot.Ecto.Translator do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -9,7 +9,7 @@ defmodule Walybot.Translator do
     timestamps()
   end
 
-  def changeset(params, translator \\ %Walybot.Translator{}) do
+  def changeset(params, translator \\ %__MODULE__{}) do
     translator
     |> cast(params, [:username, :is_authorized, :telegram_id])
     |> update_change(:username, &String.downcase/1)

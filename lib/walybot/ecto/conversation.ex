@@ -1,4 +1,4 @@
-defmodule Walybot.Conversation do
+defmodule Walybot.Ecto.Conversation do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -9,7 +9,7 @@ defmodule Walybot.Conversation do
     timestamps()
   end
 
-  def changeset(params, conversation \\ %Walybot.Conversation{}) do
+  def changeset(params, conversation \\ %__MODULE__{}) do
     conversation
     |> cast(params, [:name, :needs_translation, :telegram_id])
     |> validate_required([:name, :needs_translation, :telegram_id])
