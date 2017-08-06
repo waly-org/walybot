@@ -29,7 +29,7 @@ defmodule Walybot.Ecto.Translation do
   end
 
   def one_pending_translation do
-    result = __MODULE__ |> where([t], is_nil(t.translation)) |> Repo.one
+    result = __MODULE__ |> where([t], is_nil(t.translation)) |> limit(1) |> Repo.one
     case result do
       nil -> {:error, "no pending translations"}
       translation -> {:ok, translation}
