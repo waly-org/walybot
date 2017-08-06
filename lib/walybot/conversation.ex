@@ -1,7 +1,8 @@
 defmodule Walybot.Conversation do
   use GenServer
   require Logger
-  alias Walybot.Ecto.Conversation
+  alias Walybot.Ecto.{Conversation,Repo}
+  alias Walybot.Update
 
   def start_link(name, conversation_id) do
     GenServer.start_link(__MODULE__, conversation_id, name: name)
@@ -17,7 +18,15 @@ defmodule Walybot.Conversation do
   end
 
   def handle_call({:update, update}, _from, state) do
+    state = update_conversation(state, update)
     result = Walybot.Switchboard.update(update)
     {:reply, result, state}
+  end
+
+  defp update_conversation(state, update) do
+    {:ok, conversation} = %{name: Update.conversation_name(update)}
+                          |> Conversation.changeset(state.conversation)
+                          |> Repo.update
+    Map.put(state, :conversation, conversation)
   end
 end
