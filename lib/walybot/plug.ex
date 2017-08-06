@@ -41,10 +41,10 @@ defmodule Walybot.Plug do
   end
 
   defp set_logging_context(update) do
-    id = get_in(update, ["message","from","id"]) || get_in(update, ["callback_query","message","from","id"])
-    name = get_in(update, ["message","from","username"]) || get_in(update, ["callback_query","message","from","username"])
-    conversation_id = get_in(update, ["message", "chat", "id"]) || get_in(update, ["callback_query","message", "chat", "id"])
-    conversation_name = get_in(update, ["message","chat","title"]) || get_in(update, ["message","chat","username"]) || get_in(update, ["callback_query", "message","chat","title"]) || get_in(update, ["callback_query","message","chat","username"])
+    id = Walybot.Update.sender_id(update)
+    name = Walybot.Update.sender_name(update)
+    conversation_id = Walybot.Update.conversation_id(update)
+    conversation_name = Walybot.Update.conversation_name(update)
     %Timber.Contexts.UserContext{id: id, name: name} |> Timber.add_context()
     Timber.add_context(conversation: %{id: conversation_id, name: conversation_name})
     Logger.info "#{inspect update}"
