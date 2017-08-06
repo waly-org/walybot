@@ -1,6 +1,6 @@
 defmodule Walybot.Command.AddTranslator do
   require Logger
-  alias Walybot.{Repo,Translator}
+  alias Walybot.Ecto.{Repo,Translator}
   import Walybot.Command.Helpers
 
   def command(text, update) do

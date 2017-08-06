@@ -27,7 +27,7 @@ defmodule Walybot.PollTelegram do
     # the poller to stop and give up?
     Appsignal.increment_counter("handle_update", 1)
     {microseconds, value} = :timer.tc(fn ->
-      :ok = Walybot.Switchboard.update(update)
+      :ok = Walybot.Conversations.update(update)
     end)
     Appsignal.add_distribution_value("update_processing_time", microseconds / 1000.0)
     value

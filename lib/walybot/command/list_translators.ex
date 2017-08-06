@@ -1,5 +1,5 @@
 defmodule Walybot.Command.ListTranslators do
-  alias Walybot.{Repo,Translator}
+  alias Walybot.Ecto.{Repo,Translator}
 
   def command(_text, update) do
     translators = Translator |> Repo.all |> Enum.group_by(fn(translator) -> translator.is_authorized end)

@@ -1,5 +1,5 @@
 defmodule Walybot.Command.ActivateTranslator do
-  alias Walybot.{Repo,Translator}
+  alias Walybot.Ecto.{Repo,Translator}
   import Ecto.Query
   import Walybot.Command.Helpers
 

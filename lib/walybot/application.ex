@@ -10,7 +10,7 @@ defmodule Walybot.Application do
     children = [
       supervisor(Walybot.Ecto.Repo, []),
       Plug.Adapters.Cowboy.child_spec(:http, Walybot.Plug, [], [port: 4000]),
-      sueprvisor(Walybot.ConversationSupervisor, [:ok], shutdown: 10_000),
+      supervisor(Walybot.ConversationSupervisor, [:ok], shutdown: 10_000),
     ]
     children = add_poller(children, Mix.env)
 

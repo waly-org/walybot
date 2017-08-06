@@ -1,17 +1,4 @@
 defmodule Walybot.Switchboard do
-  @moduledoc """
-  This is the main ingestion point for updates that we receive from telegram.
-  The key interface is the `update/1` function which takes a parsed update map
-  and returns `:ok` or `{:error, reason}`
-
-  Returning `:ok` should cause us to acknowledge an update so telegram can forget about it.
-  Returning `{:error, reason}` should skip acknowledging so telegram will try to send it again.
-
-  So `{:error, reason}` should not be returned for things like an invalid command. In those cases
-  we should send a message back to the telegram user and report `:ok`.
-  If we fail to send the reply, then we would return an `{:error, reason}` since we need to try it again.
-  """
-
   require Logger
 
   def update(%{"message" => %{"text" => text}}=update), do: text_message(text, update)
@@ -35,10 +22,6 @@ defmodule Walybot.Switchboard do
   defp text_message(_, %{"message" => %{"chat" => %{"type" => "private"}}}=update), do: Walybot.Command.ProvideTranslation.command("", update)
   defp text_message(_, %{"message" => %{"chat" => %{"type" => "group"}}}=update) do
     Walybot.Conversations.queue_for_translation(update)
-  end
-  defp text_message(_, %{"message" => %{"chat" => %{"type" => "group"}}}=update) do
-    Logger.info "TODO: translate this #{inspect update}"
-    :ok
   end
   defp text_message(_, update) do
     Appsignal.send_error(%RuntimeError{}, "Received unexpected text message", System.stacktrace(), %{update: update})

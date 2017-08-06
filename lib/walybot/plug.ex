@@ -30,7 +30,7 @@ defmodule Walybot.Plug do
 
   defp process_webhook(%{body_params: update}=conn) do
     set_logging_context(update)
-    case Walybot.Switchboard.update(update) do
+    case Walybot.Conversations.update(update) do
       :ok -> conn |> send_resp(200, "OK")
       {:error, reason} ->
         error_attrs = %{error: reason, update: update}

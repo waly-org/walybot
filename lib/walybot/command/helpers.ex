@@ -1,6 +1,6 @@
 defmodule Walybot.Command.Helpers do
   import Ecto.Query
-  alias Walybot.{Repo,Translator}
+  alias Walybot.Ecto.{Repo,Translator}
 
   def handle_callback_error(query, fun) do
     case fun.() do

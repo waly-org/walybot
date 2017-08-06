@@ -1,5 +1,6 @@
 defmodule Walybot.Command.GetTranslation do
-  alias Walybot.{ExpectedTranslations,Translation}
+  alias Walybot.ExpectedTranslations
+  alias Walybot.Ecto.Translation
   import Walybot.Command.Helpers
 
   def command(_text, update) do
