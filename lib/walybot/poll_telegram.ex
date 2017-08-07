@@ -23,6 +23,7 @@ defmodule Walybot.PollTelegram do
   end
 
   def process_update(update) do
+    Logger.info "#{inspect update}"
     # TODO: instead of raising an exception when we get {:error, reason}, we need a graceful way of telling
     # the poller to stop and give up?
     Appsignal.increment_counter("handle_update", 1)

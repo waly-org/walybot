@@ -13,7 +13,6 @@ defmodule Walybot.Command.GetTranslation do
     force_reply = %{reply_markup: %{force_reply: true, selective: true}}
 
     with {:ok, translator} <- lookup_translator(username),
-         :ok <- validate_translator_authorized(translator),
          {:ok, translation} <- Translation.one_pending_translation(),
          recent_translations <- Translation.recent_translations(translation),
          text <- format_translation_message(recent_translations, translation),
@@ -28,7 +27,4 @@ defmodule Walybot.Command.GetTranslation do
     end)
     "#{text}\n\n=> TRANSLATE THIS\n#{translation.text}"
   end
-
-  defp validate_translator_authorized(%{is_authorized: true}), do: :ok
-  defp validate_translator_authorized(_), do: {:error, "you are not allowed to translate messages"}
 end

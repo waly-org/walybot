@@ -1,6 +1,6 @@
 defmodule Walybot.Command.Helpers do
   import Ecto.Query
-  alias Walybot.Ecto.{Repo,Translator}
+  alias Walybot.Ecto.{Repo,User}
 
   def handle_callback_error(query, fun) do
     case fun.() do
@@ -53,7 +53,7 @@ defmodule Walybot.Command.Helpers do
   end
 
   def lookup_translator(username) do
-    case Translator |> where(username: ^username) |> Repo.one do
+    case User |> where(username: ^username, is_translator: true) |> Repo.one do
       nil -> {:error, "@#{username} not found"}
       record -> {:ok, record}
     end
