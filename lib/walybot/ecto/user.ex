@@ -22,8 +22,8 @@ defmodule Walybot.Ecto.User do
 
   def first_or_create(telegram_id, username) do
     case __MODULE__ |> where(telegram_id: ^telegram_id) |> or_where(username: ^username) |> Repo.one do
-      nil -> %{telegram_id: telegram_id} |> changeset |> Repo.insert
-      conversation -> {:ok, conversation}
+      nil -> %{telegram_id: telegram_id, username: username} |> changeset |> Repo.insert
+      user -> {:ok, user}
     end
   end
 end
