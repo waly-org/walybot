@@ -1,5 +1,5 @@
 defmodule Walybot.Command.DeactivateTranslator do
-  alias Walybot.Ecto.{Repo,Translator}
+  alias Walybot.Ecto.{Repo,User}
   import Ecto.Query
   import Walybot.Command.Helpers
 
@@ -8,7 +8,7 @@ defmodule Walybot.Command.DeactivateTranslator do
   end
 
   def command(_text, update) do
-    translators = Translator |> where(is_authorized: true) |> Repo.all
+    translators = User |> where(is_translator: true) |> Repo.all
     prompt = "deactivate - select which translator you would like to de-activate"
     handle_command_error(update, fn -> show_translator_list_keyboard(update, translators, prompt) end)
   end
@@ -21,6 +21,6 @@ defmodule Walybot.Command.DeactivateTranslator do
   end
 
   defp deactivate(translator) do
-    %{is_authorized: false} |> Translator.changeset(translator) |> Repo.update
+    %{is_translator: false} |> User.changeset(translator) |> Repo.update
   end
 end

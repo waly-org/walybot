@@ -1,6 +1,6 @@
 defmodule Walybot.Command.AddTranslator do
   require Logger
-  alias Walybot.Ecto.{Repo,Translator}
+  alias Walybot.Ecto.{Repo,User}
   import Walybot.Command.Helpers
 
   def command(text, update) do
@@ -16,13 +16,13 @@ defmodule Walybot.Command.AddTranslator do
 
   def create_or_update_translator(username) do
     import Ecto.Query
-    case Translator |> where(username: ^username) |> Repo.one do
+    case User |> where(username: ^username) |> Repo.one do
       nil ->
-        %{username: username, is_authorized: true} |> Translator.changeset |> Repo.insert
+        %{username: username, is_translator: true} |> User.changeset |> Repo.insert
       translator -> {:ok, translator}
     end
   end
 
-  defp active_or_deactivated(%{is_authorized: true}), do: "activated"
+  defp active_or_deactivated(%{is_translator: true}), do: "activated"
   defp active_or_deactivated(_), do: "deactivated"
 end

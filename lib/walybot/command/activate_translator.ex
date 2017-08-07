@@ -1,5 +1,5 @@
 defmodule Walybot.Command.ActivateTranslator do
-  alias Walybot.Ecto.{Repo,Translator}
+  alias Walybot.Ecto.{Repo,User}
   import Ecto.Query
   import Walybot.Command.Helpers
 
@@ -8,7 +8,7 @@ defmodule Walybot.Command.ActivateTranslator do
   end
 
   def command(update) do
-    translators = Translator |> where(is_authorized: false) |> Repo.all
+    translators = User |> where(is_translator: false) |> Repo.all
     prompt = "activate - select which translator you would like to activate"
     handle_command_error(update, fn -> show_translator_list_keyboard(update, translators, prompt) end)
   end
@@ -20,6 +20,6 @@ defmodule Walybot.Command.ActivateTranslator do
   end
 
   defp activate(translator) do
-    %{is_authorized: true} |> Translator.changeset(translator) |> Repo.update
+    %{is_translator: true} |> User.changeset(translator) |> Repo.update
   end
 end

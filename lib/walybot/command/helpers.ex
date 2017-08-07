@@ -46,7 +46,7 @@ defmodule Walybot.Command.Helpers do
   def lookup_translator_by_id(str) when is_binary(str), do: str |> String.to_integer |> lookup_translator_by_id
   def lookup_translator_by_id(id) do
     import Ecto.Query
-    case Translator |> where(id: ^id) |> Repo.one do
+    case User |> where(id: ^id) |> Repo.one do
       nil -> {:error, "translator not found"}
       translator -> {:ok, translator}
     end
