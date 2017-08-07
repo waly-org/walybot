@@ -9,7 +9,7 @@ defmodule Walybot.Ecto.Translation do
     field :translation, :string
 
     belongs_to :conversation, Walybot.Ecto.Conversation
-    belongs_to :translator, Walybot.Ecto.Translator
+    belongs_to :translator, Walybot.Ecto.User
     timestamps()
   end
 

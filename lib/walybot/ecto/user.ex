@@ -1,19 +1,21 @@
-defmodule Walybot.Ecto.Translator do
+defmodule Walybot.Ecto.User do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "translators" do
+  schema "users" do
     field :username, :string
-    field :is_authorized, :boolean, default: false
     field :telegram_id, :integer
+    field :is_admin, :boolean, default: false
+    field :is_translator, :boolean, default: false
     timestamps()
   end
 
+
   def changeset(params, translator \\ %__MODULE__{}) do
     translator
-    |> cast(params, [:username, :is_authorized, :telegram_id])
+    |> cast(params, [:username, :telegram_id, :is_admin, :is_translator])
     |> update_change(:username, &String.downcase/1)
-    |> validate_required([:username, :is_authorized])
+    |> validate_required([:username])
     |> unique_constraint(:username)
     |> unique_constraint(:telegram_id)
   end

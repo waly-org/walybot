@@ -1,1 +1,1 @@
-alias Walybot.Ecto.{Conversation,Repo,Translation,Translator}
+alias Walybot.Ecto.{Conversation,Repo,Translation,User}
