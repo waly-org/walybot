@@ -18,18 +18,12 @@ defmodule Walybot.Switchboard do
   end
 
   defp callback_query(%{"message" => %{"text" => "admin"<>_}}=query, context), do: Walybot.Command.Admin.callback(query, context)
-  defp callback_query(%{"message" => %{"text" => "activate"<>_}}=query, _conversation_context), do: Walybot.Command.ActivateTranslator.callback(query)
-  defp callback_query(%{"message" => %{"text" => "deactivate"<>_}}=query, _conversation_context), do: Walybot.Command.DeactivateTranslator.callback(query)
   defp callback_query(query, conversation_context) do
     Logger.info "unhandled callback query: #{inspect query} (#{inspect conversation_context})"
     :ok
   end
 
   defp text_message("/admin"<>_, update, %{user: user}), do: Walybot.Command.Admin.command(update, user)
-  defp text_message("/activate"<>_, update, _conversation_context), do: Walybot.Command.ActivateTranslator.command(update)
-  defp text_message("/add"<>_=command, update, _conversation_context), do: Walybot.Command.AddTranslator.command(command, update)
-  defp text_message("/deactivate"<>_=command, update, _conversation_context), do: Walybot.Command.DeactivateTranslator.command(command, update)
-  defp text_message("/list"<>_, update, _conversation_context), do: Walybot.Command.ListTranslators.command("/list", update)
   defp text_message("/translate"<>_, update, _conversation_context), do: Walybot.Command.GetTranslation.command("/translate", update)
   defp text_message(_text, update, %{expecting: {module, arg}}=context), do: apply(module, :expecting, [arg, update, context])
   defp text_message(_, %{"message" => %{"chat" => %{"type" => "private"}}}=update, _conversation_context), do: Walybot.Command.ProvideTranslation.command("", update)
