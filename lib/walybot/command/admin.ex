@@ -16,11 +16,22 @@ defmodule Walybot.Command.Admin do
       other -> other
     end
   end
-  def callback(%{"data" => "cancel"}=query, _context) do
-    Telegram.Bot.edit_message(query, %{text: "🖖🏾 have a nice day"})
+  def callback(%{"data" => "cancel"}=query, context) do
+    with {:ok, _} <- Telegram.Bot.edit_message(query, %{text: "🖖🏾 have a nice day"}),
+    do: {:context, Map.delete(context, :expecting)}
   end
   def callback(%{"data" => "list_users"}=query, _context) do
     Telegram.Bot.edit_message(query, %{text: user_list_message()})
+  end
+  def callback(%{"data" => "remove_translator"}=query, _context) do
+    message = translator_buttons() |> custom_keyboard |> Map.put(:text, "admin - remove_translator: Select which translator you want to remove")
+    Telegram.Bot.edit_message(query, message)
+  end
+  def callback(%{"data" => id_str, "message" => %{"text" => "admin - remove_translator"<>_}}=query, _context) do
+    with {:ok, user} <- lookup_translator_by_id(id_str),
+         {:ok, user} <- %{is_translator: false} |> User.changeset(user) |> Repo.update,
+         {:ok, _} <- Telegram.Bot.edit_message(query, %{text: "👍🏽 @#{user.username} is no longer a translator"}),
+    do: :ok
   end
   def callback(query, _context), do: Telegram.Bot.edit_message(query, %{text: "huh?!"})
 
@@ -33,8 +44,18 @@ defmodule Walybot.Command.Admin do
     with {:ok, username} <- parse_username("@", text),
          {:ok, user} <- User.first_or_create(username),
          {:ok, user} <- %{is_translator: true} |> User.changeset(user) |> Repo.update,
-         {:ok, _} <- Telegram.Bot.send_message(update, "👍🏽 #{user.username} is now a translator"),
+         {:ok, _} <- Telegram.Bot.send_message(update, "👍🏽 @#{user.username} is now a translator"),
     do: {:context, Map.delete(context, :expecting)}
+  end
+
+  def translator_buttons do
+    import Ecto.Query
+    buttons = User
+              |> where(is_translator: true)
+              |> order_by(asc: :username)
+              |> Repo.all
+              |> Enum.map(&( {Integer.to_string(&1.id), "@#{&1.username}"} ))
+    buttons ++ [{"cancel", "cancel"}]
   end
 
   defp user_list_message do
