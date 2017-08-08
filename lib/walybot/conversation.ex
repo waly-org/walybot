@@ -21,8 +21,10 @@ defmodule Walybot.Conversation do
     state = state
             |> update_conversation(update)
             |> update_user(update)
-    result = Walybot.Switchboard.update(update, state)
-    {:reply, result, state}
+    case Walybot.Switchboard.update(update, state) do
+      {:context, new_state} -> {:reply, :ok, new_state}
+      response -> {:reply, response, state}
+    end
   end
 
   defp update_conversation(state, update) do
