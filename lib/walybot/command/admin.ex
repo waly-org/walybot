@@ -2,35 +2,40 @@ defmodule Walybot.Command.Admin do
   import Walybot.Command.Helpers
   alias Walybot.Ecto.{Repo,User}
 
-  def callback(query, %{is_admin: true}=user) do
-    handle_callback_error(query, fn -> attempt_callback(query, user) end)
-  end
-  def callback(query, _user) do
-    handle_callback_error(query, fn -> {:error, "you must be an admin"} end)
-  end
+  @admin_buttons [
+    {"list_users", "list users"},
+    {"add_translator", "add translator"},
+    {"remove_translator", "remove translator"},
+    {"cancel", "cancel"},
+  ]
 
-  def command(update, user) do
-    handle_command_error(update, fn -> attempt_admin(user) end)
+  def callback(_query, %{user: %{is_admin: false}}), do: {:error, "you must be an admin"}
+  def callback(%{"data" => "add_translator"}=query, context) do
+    case Telegram.Bot.edit_message(query, %{text: "cool, send me their username"}) do
+      {:ok, _} -> {:context, Map.put(context, :expecting, {__MODULE__, "add_translator"})}
+      other -> other
+    end
   end
-
-  defp attempt_admin(%{is_admin: true}=user) do
-    Telegram.Bot.send_message(user.telegram_id, "admin - What do you need?", %{
-      reply_markup: %{
-        inline_keyboard: [
-          [%{text: "list users", callback_data: "list_users"}, %{text: "cancel", callback_data: "cancel"}],
-        ]
-      }
-    })
-  end
-  defp attempt_admin(_user), do: {:error, "you must be an admin to run this command"}
-
-  def attempt_callback(%{"data" => "cancel"}=query, _user) do
+  def callback(%{"data" => "cancel"}=query, _context) do
     Telegram.Bot.edit_message(query, %{text: "🖖🏾 have a nice day"})
   end
-  def attempt_callback(%{"data" => "list_users"}=query, _user) do
+  def callback(%{"data" => "list_users"}=query, _context) do
     Telegram.Bot.edit_message(query, %{text: user_list_message()})
   end
-  def attempt_callback(query, _user), do: Telegram.Bot.edit_message(query, "huh?!")
+  def callback(query, _context), do: Telegram.Bot.edit_message(query, %{text: "huh?!"})
+
+  def command(_update, %{is_admin: true}=user) do
+    Telegram.Bot.send_message(user.telegram_id, "admin - What do you need?", custom_keyboard(@admin_buttons))
+  end
+  def command(_update, _user), do: {:error, "you must be an admin to run this command"}
+
+  def expecting("add_translator", %{"message" => %{"text" => text}}=update, context) do
+    with {:ok, username} <- parse_username("@", text),
+         {:ok, user} <- User.first_or_create(username),
+         {:ok, user} <- %{is_translator: true} |> User.changeset(user) |> Repo.update,
+         {:ok, _} <- Telegram.Bot.send_message(update, "👍🏽 #{user.username} is now a translator"),
+    do: {:context, Map.delete(context, :expecting)}
+  end
 
   defp user_list_message do
     User |> Repo.all |> Enum.map(&user_to_line/1) |> Enum.join("\n")

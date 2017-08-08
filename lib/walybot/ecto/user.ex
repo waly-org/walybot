@@ -19,6 +19,13 @@ defmodule Walybot.Ecto.User do
     |> unique_constraint(:telegram_id)
   end
 
+  def first_or_create(username) do
+    case __MODULE__ |> where(username: ^username) |> Repo.one do
+      nil -> %{username: username} |> changeset |> Repo.insert
+      user -> {:ok, user}
+    end
+  end
+
   def first_or_create(telegram_id, username) do
     case __MODULE__ |> where(telegram_id: ^telegram_id) |> or_where(username: ^username) |> Repo.one do
       nil -> %{telegram_id: telegram_id, username: username} |> changeset |> Repo.insert
