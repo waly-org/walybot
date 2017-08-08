@@ -9,6 +9,7 @@ defmodule Walybot.Switchboard do
     Logger.info "not sure what type of message this is #{inspect update}"
   end
 
+  defp callback_query(%{"message" => %{"text" => "admin"<>_}}=query, %{user: user}), do: Walybot.Command.Admin.callback(query, user)
   defp callback_query(%{"message" => %{"text" => "activate"<>_}}=query, _conversation_context), do: Walybot.Command.ActivateTranslator.callback(query)
   defp callback_query(%{"message" => %{"text" => "deactivate"<>_}}=query, _conversation_context), do: Walybot.Command.DeactivateTranslator.callback(query)
   defp callback_query(query, _conversation_context) do
@@ -16,6 +17,7 @@ defmodule Walybot.Switchboard do
     :ok
   end
 
+  defp text_message("/admin"<>_, update, %{user: user}), do: Walybot.Command.Admin.command(update, user)
   defp text_message("/activate"<>_, update, _conversation_context), do: Walybot.Command.ActivateTranslator.command(update)
   defp text_message("/add"<>_=command, update, _conversation_context), do: Walybot.Command.AddTranslator.command(command, update)
   defp text_message("/deactivate"<>_=command, update, _conversation_context), do: Walybot.Command.DeactivateTranslator.command(command, update)
