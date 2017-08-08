@@ -14,7 +14,6 @@ defmodule Walybot.Ecto.User do
   def changeset(params, translator \\ %__MODULE__{}) do
     translator
     |> cast(params, [:username, :telegram_id, :is_admin, :is_translator])
-    |> update_change(:username, &String.downcase/1)
     |> validate_required([:username])
     |> unique_constraint(:username)
     |> unique_constraint(:telegram_id)
