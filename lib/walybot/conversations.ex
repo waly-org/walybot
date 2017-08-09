@@ -30,8 +30,13 @@ defmodule Walybot.Conversations do
   def update(update) do
     case get_conversation_id(update) do
       nil -> log_error(update)
-      id -> send_update_to_conversation(id, update)
+      id -> send_to_conversation(id, {:update, update})
     end
+  end
+
+  def user_update(%{telegram_id: nil}), do: :ok
+  def user_update(%{telegram_id: conversation_id}=user) do
+    send_to_conversation(conversation_id, {:user_update, user})
   end
 
   defp create_translation(conversation, %{"message" => %{"from" => %{"username" => username}, "text" => text}}) do
@@ -55,12 +60,12 @@ defmodule Walybot.Conversations do
     Conversation |> where(telegram_id: ^telegram_id) |> Repo.one
   end
 
-  defp send_update_to_conversation(conversation_id, update) do
+  defp send_to_conversation(conversation_id, message) do
     atom = :"CONVERSATION_#{conversation_id}"
     {:ok, pid} = case Process.whereis(atom) do
                     nil -> Walybot.ConversationSupervisor.start(atom, conversation_id)
                     pid -> {:ok, pid}
                   end
-    GenServer.call(pid, {:update, update})
+    GenServer.call(pid, message)
   end
 end

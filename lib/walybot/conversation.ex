@@ -27,6 +27,10 @@ defmodule Walybot.Conversation do
     end
   end
 
+  def handle_call({:user_update, user}, _from, state) do
+    {:reply, :ok, Map.put(state, :user, user)}
+  end
+
   defp update_conversation(state, update) do
     {:ok, conversation} = %{name: Update.conversation_name(update)}
                           |> Conversation.changeset(state.conversation)

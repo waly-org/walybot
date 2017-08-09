@@ -20,7 +20,7 @@ defmodule Walybot.Command.Helpers do
       {:context, new_context} -> {:context, new_context}
       {:error, reason} ->
         reason = error_message(reason)
-        case Telegram.Bot.edit_message(query, "😢 #{reason}") do
+        case Telegram.Bot.edit_message(query, %{text: "😢 #{reason}"}) do
           {:ok, _message} -> :ok
           {:error, reason} -> {:error, reason}
         end

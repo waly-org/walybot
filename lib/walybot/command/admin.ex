@@ -29,7 +29,7 @@ defmodule Walybot.Command.Admin do
   end
   def callback(%{"data" => id_str, "message" => %{"text" => "admin - remove_translator"<>_}}=query, _context) do
     with {:ok, user} <- lookup_translator_by_id(id_str),
-         {:ok, user} <- %{is_translator: false} |> User.changeset(user) |> Repo.update,
+         {:ok, user} <- update_user(%{is_translator: false}, user),
          {:ok, _} <- Telegram.Bot.edit_message(query, %{text: "👍🏽 @#{user.username} is no longer a translator"}),
     do: :ok
   end
@@ -43,7 +43,7 @@ defmodule Walybot.Command.Admin do
   def expecting("add_translator", %{"message" => %{"text" => text}}=update, context) do
     with {:ok, username} <- parse_username("@", text),
          {:ok, user} <- User.first_or_create(username),
-         {:ok, user} <- %{is_translator: true} |> User.changeset(user) |> Repo.update,
+         {:ok, user} <- update_user(%{is_translator: true}, user),
          {:ok, _} <- Telegram.Bot.send_message(update, "👍🏽 @#{user.username} is now a translator"),
     do: {:context, Map.delete(context, :expecting)}
   end
@@ -56,6 +56,14 @@ defmodule Walybot.Command.Admin do
               |> Repo.all
               |> Enum.map(&( {Integer.to_string(&1.id), "@#{&1.username}"} ))
     buttons ++ [{"cancel", "cancel"}]
+  end
+
+  defp update_user(params, user) do
+    with {:ok, user} <- params |> User.changeset(user) |> Repo.update,
+        # we have to wrap this in a spawn because it can result in a GenServer.call to the
+        # current conversation and you can't call yourself
+         _pid <- spawn(fn -> Walybot.Conversations.user_update(user) end),
+    do: {:ok, user}
   end
 
   defp user_list_message do
