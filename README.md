@@ -19,4 +19,6 @@ __WalyBot Commands__
 ```
 translate - lookup a pending translation so you can provide a translation
 admin - manage users and translations
+starttranslation - start translating the current conversation
+stoptranslation - stop translating the current conversation
 ```

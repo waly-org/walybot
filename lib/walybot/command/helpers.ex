@@ -64,9 +64,15 @@ defmodule Walybot.Command.Helpers do
     end)
   end
 
+  def lookup_admin_by_telegram_id(id) do
+    case User |> where(telegram_id: ^id, is_admin: true) |> Repo.one do
+      nil -> {:error, "must be admin"}
+      user -> {:ok, user}
+    end
+  end
+
   def lookup_translator_by_id(str) when is_binary(str), do: str |> String.to_integer |> lookup_translator_by_id
   def lookup_translator_by_id(id) do
-    import Ecto.Query
     case User |> where(id: ^id) |> Repo.one do
       nil -> {:error, "translator not found"}
       translator -> {:ok, translator}

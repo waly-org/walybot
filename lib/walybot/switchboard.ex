@@ -24,6 +24,8 @@ defmodule Walybot.Switchboard do
   end
 
   defp text_message("/admin"<>_, update, %{user: user}), do: Walybot.Command.Admin.command(update, user)
+  defp text_message("/starttranslation"<>_, update, context), do: Walybot.Command.StartTranslation.command(update, context)
+  defp text_message("/stoptranslation"<>_, update, context), do: Walybot.Command.StopTranslation.command(update, context)
   defp text_message("/translate"<>_, update, _conversation_context), do: Walybot.Command.GetTranslation.command("/translate", update)
   defp text_message(_text, update, %{expecting: {module, arg}}=context), do: apply(module, :expecting, [arg, update, context])
   defp text_message(_, %{"message" => %{"chat" => %{"type" => "private"}}}=update, _conversation_context), do: Walybot.Command.ProvideTranslation.command("", update)
