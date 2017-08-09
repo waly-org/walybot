@@ -9,8 +9,9 @@ defmodule Walybot.Application do
   def start(_type, _args) do
     children = [
       supervisor(Walybot.Ecto.Repo, []),
-      Plug.Adapters.Cowboy.child_spec(:http, Walybot.Plug, [], [port: 4000]),
       supervisor(Walybot.ConversationSupervisor, [:ok], shutdown: 10_000),
+      worker(Walybot.TranslationQueue, []),
+      Plug.Adapters.Cowboy.child_spec(:http, Walybot.Plug, [], [port: 4000]),
     ]
     children = add_poller(children, Mix.env)
 
