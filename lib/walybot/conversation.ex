@@ -17,6 +17,10 @@ defmodule Walybot.Conversation do
     {:ok, state}
   end
 
+  def handle_call({:send_translation, text}, _from, %{conversation: telegram_id}=state) do
+    {:ok, _} = Telegram.Bot.send_message(telegram_id, text)
+    {:reply, :ok, state}
+  end
   def handle_call({:update, update}, _from, state) do
     state = state
             |> update_conversation(update)
@@ -26,7 +30,6 @@ defmodule Walybot.Conversation do
       response -> {:reply, response, state}
     end
   end
-
   def handle_call({:user_update, user}, _from, state) do
     {:reply, :ok, Map.put(state, :user, user)}
   end

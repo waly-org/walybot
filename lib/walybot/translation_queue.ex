@@ -12,6 +12,10 @@ defmodule Walybot.TranslationQueue do
 
   def start_link, do: GenServer.start_link(__MODULE__, nil, name: __MODULE__)
 
+  def provide_translation(translation, translated_text, user) do
+    GenServer.call(__MODULE__, {:provide_translation, translation, translated_text, user})
+  end
+
   def subscribe_to_translations,do: GenServer.call(__MODULE__, {:subscribe_to_translations, self()})
 
   ## GenServer Callbacks
@@ -19,6 +23,13 @@ defmodule Walybot.TranslationQueue do
     {:ok, %{queue: [], translators: []}}
   end
 
+  def handle_call({:provide_translation, translation, translated_text, user}, _from, state) do
+    # TODO sanity check that this translation matches one that is currently assigned
+    new_state = unassign_pending_translation(translation, state)
+    {:ok, translation} = translation |> Translation.update_changeset(user, translated_text) |> Repo.update
+    send self(), {:deliver_translation, translation}
+    {:reply, :ok, new_state}
+  end
   def handle_call({:request_translation, translation}, _from, state) do
     new_state = queue_translation(translation, state)
     send self(), :try_to_assign_translations
@@ -31,6 +42,10 @@ defmodule Walybot.TranslationQueue do
     {:reply, :ok, Map.put(state, :translators, translators)}
   end
 
+  def handle_info({:deliver_translation, translation}, state) do
+    :ok = Walybot.Conversations.send_translation(translation)
+    {:noreply, state}
+  end
   def handle_info(:try_to_assign_translations, %{queue: [t|rest]}=state) do
     case assign_to_available_translator(t, state) do
       {new_state, %{pid: translator_pid}} ->
@@ -62,5 +77,15 @@ defmodule Walybot.TranslationQueue do
   def queue_translation(translation, %{queue: q}=state) do
     q = q ++ [translation]
     Map.put(state, :queue, q)
+  end
+
+  def unassign_pending_translation(%{id: translation_id}, %{translators: translators}=state) do
+    new_translators = Enum.map(translators, fn(translator) ->
+      case translator.current_translation do
+        %{id: translation_id} -> Map.put(translator, :current_translation, nil)
+        _ -> translator
+      end
+    end)
+    Map.put(state, :translators, translators)
   end
 end

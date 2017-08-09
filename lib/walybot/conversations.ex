@@ -15,6 +15,10 @@ defmodule Walybot.Conversations do
   require Logger
   import Walybot.Update, only: [conversation_id: 1]
 
+  def send_translation(%{translation: text, conversation: %{telegram_id: conversation_id}}) do
+    send_to_conversation(conversation_id, {:send_translation, text})
+  end
+
   def update(update) do
     case conversation_id(update) do
       nil -> log_error(update)

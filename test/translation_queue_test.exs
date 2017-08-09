@@ -3,10 +3,6 @@ defmodule Walybot.TranslationQueueTest do
   alias Walybot.TranslationQueue
   alias Walybot.Ecto.{Conversation,Repo,Translation,User}
 
-  setup do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
-  end
-
   @update %{"message" => %{"chat" => %{"all_members_are_administrators" => true, "id" => 1, "title" => "Portuguese to English", "type" => "group"}, "date" => 1502122338, "from" => %{"first_name" => "Michael", "id" => 342536863, "language_code" => "en-US", "username" => "username1"}, "message_id" => 405, "text" => "Que coisa, eh?"}, "update_id" => 375967703}
 
   test "an end-to-end translation" do
@@ -22,7 +18,7 @@ defmodule Walybot.TranslationQueueTest do
     assert translation.conversation.telegram_id == 1
     GenServer.reply(from, :ok)
     TranslationQueue.provide_translation(translation, "Who would believe it?", translator)
-    assert_receive {:"$gen_call", _from, {:send_message, "Who would believe it?"}}
+    assert_receive {:"$gen_call", _from, {:send_translation, "Who would believe it?"}}
 
     translation = Repo.get!(Translation, translation.id)
     assert translation.translator_id == translator.id
