@@ -12,6 +12,12 @@ config :walybot, Walybot.Ecto.Repo,
   pool_size: 3,
   ssl: postgres_ssl
 
+if Mix.env == :test do
+  config :walybot, Walybot.Ecto.Repo,
+    pool: Ecto.Adapters.SQL.Sandbox
+  config :logger, level: :warn
+end
+
 config :walybot, ecto_repos: [Walybot.Ecto.Repo]
 
 config :walybot, webhook_endpoint: System.get_env("WEBHOOK_ENDPOINT") || "/webhook"

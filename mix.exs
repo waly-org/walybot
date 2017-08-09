@@ -7,7 +7,8 @@ defmodule Walybot.Mixfile do
      elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps()]
+     deps: deps(),
+     aliases: aliases()]
   end
 
   # Configuration for the OTP application
@@ -29,6 +30,12 @@ defmodule Walybot.Mixfile do
       {:postgrex, "~> 0.13"},
       {:plug, "~> 1.3"},
       {:timber, "~> 2.3"},
+    ]
+  end
+
+  defp aliases do
+    [
+      "test": ["ecto.drop --quiet", "ecto.create --quiet", "ecto.migrate --quiet", "test"]
     ]
   end
 end
