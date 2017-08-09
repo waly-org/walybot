@@ -13,8 +13,6 @@ config :walybot, Walybot.Ecto.Repo,
   ssl: postgres_ssl
 
 if Mix.env == :test do
-  config :walybot, Walybot.Ecto.Repo,
-    pool: Ecto.Adapters.SQL.Sandbox
   config :logger, level: :warn
 end
 
