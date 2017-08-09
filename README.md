@@ -17,7 +17,8 @@ First you need to register your bot.
 __WalyBot Commands__
 
 ```
-translate - lookup a pending translation so you can provide a translation
+translate - start receiving messages for translation
+signoff - stop receiving messages for translation
 admin - manage users and translations
 starttranslation - start translating the current conversation
 stoptranslation - stop translating the current conversation

@@ -2,12 +2,12 @@ defmodule Walybot.Switchboard do
   require Logger
 
   def update(%{"message" => %{"text" => text}}=update, conversation_context) do
-    Walybot.Command.Helpers.handle_command_error(update, fn ->
+    handle_command_error(update, fn ->
       text_message(text, update, conversation_context)
     end)
   end
   def update(%{"callback_query" => query}, conversation_context) do
-    Walybot.Command.Helpers.handle_callback_error(query, fn ->
+    handle_callback_error(query, fn ->
       callback_query(query, conversation_context)
     end)
   end
@@ -23,19 +23,59 @@ defmodule Walybot.Switchboard do
     :ok
   end
 
+  defp text_message("/translate"<>_, update, context), do: Walybot.Command.Translation.subscribe(update, context)
+  defp text_message("/signoff"<>_, update, context), do: Walybot.Command.Translation.unsubscribe(update, context)
   defp text_message("/admin"<>_, update, %{user: user}), do: Walybot.Command.Admin.command(update, user)
   defp text_message("/starttranslation"<>_, update, context), do: Walybot.Command.StartTranslation.command(update, context)
   defp text_message("/stoptranslation"<>_, update, context), do: Walybot.Command.StopTranslation.command(update, context)
-  defp text_message("/translate"<>_, update, _conversation_context), do: Walybot.Command.GetTranslation.command("/translate", update)
   defp text_message(_text, update, %{expecting: {module, arg}}=context), do: apply(module, :expecting, [arg, update, context])
-  defp text_message(_, %{"message" => %{"chat" => %{"type" => "private"}}}=update, _conversation_context), do: Walybot.Command.ProvideTranslation.command("", update)
-  defp text_message(_, %{"message" => %{"chat" => %{"type" => "group"}}}=update, _conversation_context) do
-    Walybot.Conversations.queue_for_translation(update)
-  end
   defp text_message(_, update, _conversation_context) do
     Appsignal.send_error(%RuntimeError{}, "Received unexpected text message", System.stacktrace(), %{update: update})
     # TODO: Maybe we should do some kind of 404 logic here?
     Logger.info "not sure what to do with #{inspect update}"
     :ok
   end
+
+  defp handle_callback_error(query, fun) do
+    case fun.() do
+      :ok -> :ok
+      {:ok, _data} -> :ok
+      {:context, new_context} -> {:context, new_context}
+      {:error, reason} ->
+        reason = error_message(reason)
+        case Telegram.Bot.edit_message(query, %{text: "😢 #{reason}"}) do
+          {:ok, _message} -> :ok
+          {:error, reason} -> {:error, reason}
+        end
+    end
+  end
+
+  defp handle_command_error(update, fun) do
+    case fun.() do
+      :ok -> :ok
+      {:ok, _data} -> :ok
+      {:context, new_context} -> {:context, new_context}
+      {:error, reason} ->
+        reason = error_message(reason)
+        case Telegram.Bot.send_message(update, "😢 #{reason}") do
+          {:ok, _message} -> :ok
+          {:error, reason} -> {:error, reason}
+        end
+    end
+  end
+
+  defp error_message(%Ecto.Changeset{}=changeset) do
+    import Ecto.Changeset, only: [traverse_errors: 2]
+    changeset
+    |> traverse_errors(fn {msg, opts} ->
+      Enum.reduce(opts, msg, fn {key, value}, acc ->
+        String.replace(acc, "%{#{key}}", to_string(value))
+      end)
+    end)
+    |> Enum.map(fn({key, messages}) ->
+      "#{key}: #{Enum.join(messages, ", ")}"
+    end)
+    |> Enum.join(", ")
+  end
+  defp error_message(reason), do: reason
 end
