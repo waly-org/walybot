@@ -23,8 +23,8 @@ defmodule Walybot.Switchboard do
     :ok
   end
 
-  defp text_message("/translate"<>_, _update, _context), do: Walybot.TranslationQueue.subscribe_to_translations()
-  defp text_message("/signoff"<>_, _update, _context), do: Walybot.TranslationQueue.unsubscribe_from_translations()
+  defp text_message("/translate"<>_, update, context), do: Walybot.Command.Translation.command("/translate", update, context)
+  defp text_message("/signoff"<>_, update, context), do: Walybot.Command.Translation.command("/signoff", update, context)
   defp text_message("/admin"<>_, update, %{user: user}), do: Walybot.Command.Admin.command(update, user)
   defp text_message("/starttranslation"<>_, update, context), do: Walybot.Command.StartTranslation.command(update, context)
   defp text_message("/stoptranslation"<>_, update, context), do: Walybot.Command.StopTranslation.command(update, context)
