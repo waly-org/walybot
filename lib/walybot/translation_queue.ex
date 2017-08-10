@@ -16,7 +16,9 @@ defmodule Walybot.TranslationQueue do
     GenServer.call(__MODULE__, {:provide_translation, translation, translated_text, user})
   end
 
-  def subscribe_to_translations,do: GenServer.call(__MODULE__, {:subscribe_to_translations, self()})
+  def subscribe_to_translations, do: GenServer.call(__MODULE__, {:subscribe_to_translations, self()})
+
+  def unsubscribe_from_translations, do: GenServer.call(__MODULE__, {:unsubscribe_from_translations, self()})
 
   ## GenServer Callbacks
   def init(nil) do
@@ -36,17 +38,25 @@ defmodule Walybot.TranslationQueue do
     {:reply, :ok, new_state}
   end
   def handle_call({:subscribe_to_translations, pid}, _from, state) do
+    Logger.info "#{__MODULE__} getting subscription from #{inspect pid}"
     translator = %{pid: pid, monitor: Process.monitor(pid), current_translation: nil}
     translators = [translator | state.translators]
     send self(), :try_to_assign_translations
     {:reply, :ok, Map.put(state, :translators, translators)}
   end
-
+  def handle_call({:unsubscribe_from_translations, pid}, _from, state) do
+    Logger.info "#{__MODULE__} translator #{inspect pid} unsubscribed from translations"
+    {:reply, :ok, remove_translator(pid, state)}
+  end
+  def handle_info({:DOWN, ref, :process, _, _}, state) do
+    {:noreply, remove_translator(ref, state)}
+  end
   def handle_info({:deliver_translation, translation}, state) do
     :ok = Walybot.Conversations.send_translation(translation)
     {:noreply, state}
   end
   def handle_info(:try_to_assign_translations, %{queue: [t|rest]}=state) do
+    Logger.info "#{__MODULE__} :try_to_assign_translations #{inspect t}"
     case assign_to_available_translator(t, state) do
       {new_state, %{pid: translator_pid}} ->
         new_state = Map.put(state, :queue, rest)
@@ -77,6 +87,12 @@ defmodule Walybot.TranslationQueue do
   def queue_translation(translation, %{queue: q}=state) do
     q = q ++ [translation]
     Map.put(state, :queue, q)
+  end
+
+  def remove_translator(ref_or_pid, %{translators: translators}=state) do
+    # TODO re-queue the current translation if it has one?
+    translators = Enum.reject(state.translators, &( &1.monitor == ref_or_pid || &1.pid == ref_or_pid ))
+    Map.put(state, :translators, translators)
   end
 
   def unassign_pending_translation(%{id: translation_id}, %{translators: translators}=state) do

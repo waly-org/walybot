@@ -1,7 +1,7 @@
 defmodule Walybot.Conversation do
   use GenServer
   require Logger
-  alias Walybot.Ecto.{Conversation,Repo,User}
+  alias Walybot.Ecto.{Conversation,Repo,Translation,User}
   alias Walybot.Update
 
   def start_link(name, conversation_id) do
@@ -17,11 +17,18 @@ defmodule Walybot.Conversation do
     {:ok, state}
   end
 
-  def handle_call({:send_translation, text}, _from, %{conversation: telegram_id}=state) do
+  def handle_call({:please_translate, translation}, _from, %{conversation: %{telegram_id: telegram_id}}=state) do
+    Logger.info "#{state.conversation_id} - please translate #{inspect translation}"
+    {:ok, _} = Telegram.Bot.send_message(telegram_id, "PLEASE TRANSLATE =\n#{translation.text}")
+    state = Map.put(state, :expecting, {__MODULE__, translation})
+    {:reply, :ok, state}
+  end
+  def handle_call({:send_translation, text}, _from, %{conversation: %{telegram_id: telegram_id}}=state) do
     {:ok, _} = Telegram.Bot.send_message(telegram_id, text)
     {:reply, :ok, state}
   end
   def handle_call({:update, update}, _from, state) do
+    Logger.info "#{state.conversation_id} - #{inspect update}"
     state = state
             |> update_conversation(update)
             |> update_user(update)
@@ -32,6 +39,11 @@ defmodule Walybot.Conversation do
   end
   def handle_call({:user_update, user}, _from, state) do
     {:reply, :ok, Map.put(state, :user, user)}
+  end
+
+  def expecting(%Translation{}=translation, %{"message" => %{"text" => translated}}, %{user: user}=context) do
+    :ok = Walybot.TranslationQueue.provide_translation(translation, translated, user)
+    {:context, Map.delete(context, :expecting)}
   end
 
   defp update_conversation(state, update) do

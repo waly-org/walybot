@@ -23,14 +23,17 @@ defmodule Walybot.Switchboard do
     :ok
   end
 
-  defp text_message("/translate"<>_, update, context), do: Walybot.Command.Translation.subscribe(update, context)
-  defp text_message("/signoff"<>_, update, context), do: Walybot.Command.Translation.unsubscribe(update, context)
+  defp text_message("/translate"<>_, _update, _context), do: Walybot.TranslationQueue.subscribe_to_translations()
+  defp text_message("/signoff"<>_, _update, _context), do: Walybot.TranslationQueue.unsubscribe_from_translations()
   defp text_message("/admin"<>_, update, %{user: user}), do: Walybot.Command.Admin.command(update, user)
   defp text_message("/starttranslation"<>_, update, context), do: Walybot.Command.StartTranslation.command(update, context)
   defp text_message("/stoptranslation"<>_, update, context), do: Walybot.Command.StopTranslation.command(update, context)
   defp text_message(_text, update, %{expecting: {module, arg}}=context), do: apply(module, :expecting, [arg, update, context])
+  defp text_message(_, update, %{conversation: %{needs_translation: true}=conversation}) do
+    Walybot.TranslationQueue.request_translation(update,conversation)
+  end
   defp text_message(_, update, _conversation_context) do
-    Appsignal.send_error(%RuntimeError{}, "Received unexpected text message", System.stacktrace(), %{update: update})
+    Appsignal.send_error(%RuntimeError{}, "Received unexpected text message", System.stacktrace(), %{update: "#{inspect update}"})
     # TODO: Maybe we should do some kind of 404 logic here?
     Logger.info "not sure what to do with #{inspect update}"
     :ok

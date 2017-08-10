@@ -35,7 +35,7 @@ defmodule Walybot.Plug do
       {:error, reason} ->
         error_attrs = %{error: reason, update: update}
         Logger.error(error_attrs)
-        Appsignal.send_error(%RuntimeError{}, "Failed to process update via webhook", System.stacktrace(), error_attrs)
+        Appsignal.send_error(%RuntimeError{}, "Failed to process update via webhook", System.stacktrace())
         conn |> send_resp(500, "Failed to process update")
     end
   end
