@@ -59,7 +59,7 @@ defmodule Walybot.TranslationQueue do
     Logger.info "#{__MODULE__} :try_to_assign_translations #{inspect t}"
     case assign_to_available_translator(t, state) do
       {new_state, %{pid: translator_pid}} ->
-        new_state = Map.put(state, :queue, rest)
+        new_state = Map.put(new_state, :queue, rest)
         :ok = GenServer.call(translator_pid, {:please_translate, t})
         {:noreply, new_state}
       false ->
@@ -91,17 +91,17 @@ defmodule Walybot.TranslationQueue do
 
   def remove_translator(ref_or_pid, %{translators: translators}=state) do
     # TODO re-queue the current translation if it has one?
-    translators = Enum.reject(state.translators, &( &1.monitor == ref_or_pid || &1.pid == ref_or_pid ))
+    translators = Enum.reject(translators, &( &1.monitor == ref_or_pid || &1.pid == ref_or_pid ))
     Map.put(state, :translators, translators)
   end
 
   def unassign_pending_translation(%{id: translation_id}, %{translators: translators}=state) do
     new_translators = Enum.map(translators, fn(translator) ->
       case translator.current_translation do
-        %{id: translation_id} -> Map.put(translator, :current_translation, nil)
+        %{id: ^translation_id} -> Map.put(translator, :current_translation, nil)
         _ -> translator
       end
     end)
-    Map.put(state, :translators, translators)
+    Map.put(state, :translators, new_translators)
   end
 end

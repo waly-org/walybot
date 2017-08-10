@@ -32,7 +32,7 @@ defmodule Walybot.Conversations do
   end
 
   defp log_error(update) do
-    Appsignal.send_error(%RuntimeError{}, "Received unexpected text message", System.stacktrace(), %{update: "#{inspect update}")
+    Appsignal.send_error(%RuntimeError{}, "Received unexpected text message", System.stacktrace(), %{update: "#{inspect update}"})
     Logger.info "not sure what to do with #{inspect update}"
     :ok
   end
