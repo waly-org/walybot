@@ -11,4 +11,15 @@ defmodule Walybot.Command.Translation do
     do: :ok
   end
   def command("/signoff"<>_, _, _), do: {:error, "you must be a translator"}
+
+  def expecting({:translation_for, translation}, %{"message" => %{"text" => translated}}=update, %{user: user}=context) do
+    with :ok <- Walybot.TranslationQueue.provide_translation(translation, translated, user),
+         {:ok, _} <- Telegram.Bot.send_message(update, "👍🏽 thanks!"),
+    do: {:context, Map.delete(context, :expecting)}
+  end
+
+  def please_translate(translation, %{conversation_id: conversation_id}=context) do
+    with {:ok, _} <- Telegram.Bot.send_message(conversation_id, "PLEASE TRANSLATE THIS \n#{translation.text}"),
+    do: {:context, Map.put(context, :expecting, {__MODULE__, {:translation_for, translation}})}
+  end
 end

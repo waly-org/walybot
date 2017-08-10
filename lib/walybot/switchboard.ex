@@ -1,6 +1,12 @@
 defmodule Walybot.Switchboard do
   require Logger
 
+  def please_translate(translation, %{conversation: %{telegram_id: conversation_id}}=context) do
+    handle_command_error(conversation_id, fn ->
+      Walybot.Command.Translation.please_translate(translation, context)
+    end)
+  end
+
   def update(%{"message" => %{"text" => text}}=update, conversation_context) do
     handle_command_error(update, fn ->
       text_message(text, update, conversation_context)

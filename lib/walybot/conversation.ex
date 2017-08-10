@@ -1,7 +1,7 @@
 defmodule Walybot.Conversation do
   use GenServer
   require Logger
-  alias Walybot.Ecto.{Conversation,Repo,Translation,User}
+  alias Walybot.Ecto.{Conversation,Repo,User}
   alias Walybot.Update
 
   def start_link(name, conversation_id) do
@@ -17,11 +17,8 @@ defmodule Walybot.Conversation do
     {:ok, state}
   end
 
-  def handle_call({:please_translate, translation}, _from, %{conversation: %{telegram_id: telegram_id}}=state) do
-    Logger.info "#{state.conversation_id} - please translate #{inspect translation}"
-    {:ok, _} = Telegram.Bot.send_message(telegram_id, "PLEASE TRANSLATE =\n#{translation.text}")
-    state = Map.put(state, :expecting, {__MODULE__, translation})
-    {:reply, :ok, state}
+  def handle_call({:please_translate, translation}, _from, state) do
+    call_switchboard(:please_translate, [translation, state], state)
   end
   def handle_call({:send_translation, text}, _from, %{conversation: %{telegram_id: telegram_id}}=state) do
     {:ok, _} = Telegram.Bot.send_message(telegram_id, text)
@@ -32,18 +29,17 @@ defmodule Walybot.Conversation do
     state = state
             |> update_conversation(update)
             |> update_user(update)
-    case Walybot.Switchboard.update(update, state) do
-      {:context, new_state} -> {:reply, :ok, new_state}
-      response -> {:reply, response, state}
-    end
+    call_switchboard(:update, [update, state], state)
   end
   def handle_call({:user_update, user}, _from, state) do
     {:reply, :ok, Map.put(state, :user, user)}
   end
 
-  def expecting(%Translation{}=translation, %{"message" => %{"text" => translated}}, %{user: user}=context) do
-    :ok = Walybot.TranslationQueue.provide_translation(translation, translated, user)
-    {:context, Map.delete(context, :expecting)}
+  defp call_switchboard(function, args, state) do
+    case apply(Walybot.Switchboard, function, args) do
+      {:context, new_state} -> {:reply, :ok, new_state}
+      response -> {:reply, response, state}
+    end
   end
 
   defp update_conversation(state, update) do
