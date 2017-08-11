@@ -9,6 +9,7 @@ defmodule Walybot.Conversation do
   end
 
   def init(conversation_id) do
+    Process.flag(:trap_exit, true)
     {:ok, conversation} = Conversation.first_or_create(conversation_id)
     state = %{
       conversation: conversation,
@@ -58,4 +59,12 @@ defmodule Walybot.Conversation do
     Map.put(state, :user, user)
   end
   defp update_user(state, _update), do: state
+
+  def terminate(_, %{translating: true, conversation_id: conversation_id}) do
+    Telegram.Bot.send_message(conversation_id, "😕 the system is being restarted, you will need to wait ~1min and then send the /translate message again to continue translating")
+    :normal
+  end
+  def terminate(reason, state) do
+    :normal
+  end
 end
