@@ -103,7 +103,10 @@ defmodule Walybot.TranslationQueue do
   end
 
   def remove_translator(ref_or_pid, %{translators: translators}=state) do
-    # TODO re-queue the current translation if it has one?
+    state = case Enum.find(translators, &( &1.monitor == ref_or_pid || &1.pid == ref_or_pid )) do
+              %{current_translation: %Translation{}=translation} -> queue_translation(translation, state)
+              _ -> state
+            end
     translators = Enum.reject(translators, &( &1.monitor == ref_or_pid || &1.pid == ref_or_pid ))
     Map.put(state, :translators, translators)
   end
