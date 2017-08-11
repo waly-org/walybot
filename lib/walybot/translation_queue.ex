@@ -22,6 +22,7 @@ defmodule Walybot.TranslationQueue do
 
   ## GenServer Callbacks
   def init(nil) do
+    send self(), :queue_all_pending_translations
     {:ok, %{queue: [], translators: []}}
   end
 
@@ -48,11 +49,23 @@ defmodule Walybot.TranslationQueue do
     Logger.info "#{__MODULE__} translator #{inspect pid} unsubscribed from translations"
     {:reply, :ok, remove_translator(pid, state)}
   end
+
   def handle_info({:DOWN, ref, :process, _, _}, state) do
     {:noreply, remove_translator(ref, state)}
   end
   def handle_info({:deliver_translation, translation}, state) do
     :ok = Walybot.Conversations.send_translation(translation)
+    {:noreply, state}
+  end
+  def handle_info(:queue_all_pending_translations, state) do
+    import Ecto.Query
+    state = Translation
+            |> where([t], is_nil(t.translation))
+            |> preload(:conversation)
+            |> Repo.all
+            |> Enum.reduce(state, fn(translation, state) ->
+              queue_translation(translation, state)
+            end)
     {:noreply, state}
   end
   def handle_info(:try_to_assign_translations, %{queue: [t|rest]}=state) do

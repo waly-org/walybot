@@ -42,7 +42,7 @@ defmodule Walybot.Switchboard do
     Appsignal.send_error(%RuntimeError{}, "Received unexpected text message", System.stacktrace(), %{update: "#{inspect update}"})
     # TODO: Maybe we should do some kind of 404 logic here?
     Logger.info "not sure what to do with #{inspect update}"
-    :ok
+    {:error, "I don't understand"}
   end
 
   defp handle_callback_error(query, fun) do
