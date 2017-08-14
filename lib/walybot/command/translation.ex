@@ -20,7 +20,7 @@ defmodule Walybot.Command.Translation do
 
   def please_translate(translation, %{conversation_id: conversation_id}=context) do
     with {:ok, _} <- Telegram.Bot.send_message(conversation_id, "PLEASE TRANSLATE THIS \n#{translation.text}"),
-         timeout_after <- (DateTime.utc_now |> DateTime.to_unix) + 30,
+         timeout_after <- (DateTime.utc_now |> DateTime.to_unix) + 300, # 5 minutes from now
     do: {:context, Map.put(context, :expecting, {__MODULE__, %{translation: translation, timeout_after: timeout_after}})}
   end
 
