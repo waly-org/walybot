@@ -4,12 +4,15 @@ defmodule Walybot.Conversation do
   alias Walybot.Ecto.{Conversation,Repo,User}
   alias Walybot.Update
 
+  @translation_timeout_check_interval 1_000
+
   def start_link(name, conversation_id) do
     GenServer.start_link(__MODULE__, conversation_id, name: name)
   end
 
   def init(conversation_id) do
     Process.flag(:trap_exit, true)
+    Process.send_after(self(), :translation_timeout_check, @translation)
     {:ok, conversation} = Conversation.first_or_create(conversation_id)
     state = %{
       conversation: conversation,
@@ -34,6 +37,15 @@ defmodule Walybot.Conversation do
   end
   def handle_call({:user_update, user}, _from, state) do
     {:reply, :ok, Map.put(state, :user, user)}
+  end
+
+  def handle_info(:translation_timeout_check, state) do
+    state = Walybot.Command.Translation.translation_timeout_check(state)
+    {:noreply, state}
+  end
+  def handle_info(other, state) do
+    Logger.error("#{__MODULE__}/#{state[:conversation_id]} received unexpected message #{inspect other}"
+    {:noreply, state}
   end
 
   defp call_switchboard(function, args, state) do

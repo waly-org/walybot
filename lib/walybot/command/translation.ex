@@ -22,4 +22,16 @@ defmodule Walybot.Command.Translation do
     with {:ok, _} <- Telegram.Bot.send_message(conversation_id, "PLEASE TRANSLATE THIS \n#{translation.text}"),
     do: {:context, Map.put(context, :expecting, {__MODULE__, {:translation_for, translation}})}
   end
+
+  def translation_timeout_check(%{expecting: {__MODULE__, %{timeout_after: timestamp}}}=state) do
+    now = DateTime.utc_now |> DateTime.to_unix
+    if timestamp < now do
+      with :ok <- Walybot.TranslationQueue.unsubscribe_from_translations(),
+           {:ok, _} <- Telegram.send_message(state[:conversation_id], "Nevermind, it looks like you are busy. I'll pause your translations until you are ready. Just send /translate again to start."),
+      do: Map.delete(state, :expecting)
+    else
+      state
+    end
+  end
+  def translation_timeout_check(state), do: state
 end
