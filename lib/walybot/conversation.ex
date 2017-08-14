@@ -12,7 +12,7 @@ defmodule Walybot.Conversation do
 
   def init(conversation_id) do
     Process.flag(:trap_exit, true)
-    Process.send_after(self(), :translation_timeout_check, @translation)
+    Process.send_after(self(), :translation_timeout_check, @translation_timeout_check_interval)
     {:ok, conversation} = Conversation.first_or_create(conversation_id)
     state = %{
       conversation: conversation,
@@ -41,10 +41,11 @@ defmodule Walybot.Conversation do
 
   def handle_info(:translation_timeout_check, state) do
     state = Walybot.Command.Translation.translation_timeout_check(state)
+    Process.send_after(self(), :translation_timeout_check, @translation_timeout_check_interval)
     {:noreply, state}
   end
   def handle_info(other, state) do
-    Logger.error("#{__MODULE__}/#{state[:conversation_id]} received unexpected message #{inspect other}"
+    Logger.error("#{__MODULE__}/#{state[:conversation_id]} received unexpected message #{inspect other}")
     {:noreply, state}
   end
 

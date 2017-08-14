@@ -12,7 +12,7 @@ defmodule Walybot.Command.Translation do
   end
   def command("/signoff"<>_, _, _), do: {:error, "you must be a translator"}
 
-  def expecting({:translation_for, translation}, %{"message" => %{"text" => translated}}=update, %{user: user}=context) do
+  def expecting(%{translation: translation}, %{"message" => %{"text" => translated}}=update, %{user: user}=context) do
     with :ok <- Walybot.TranslationQueue.provide_translation(translation, translated, user),
          {:ok, _} <- Telegram.Bot.send_message(update, "👍🏽 thanks!"),
     do: {:context, Map.delete(context, :expecting)}
@@ -20,14 +20,19 @@ defmodule Walybot.Command.Translation do
 
   def please_translate(translation, %{conversation_id: conversation_id}=context) do
     with {:ok, _} <- Telegram.Bot.send_message(conversation_id, "PLEASE TRANSLATE THIS \n#{translation.text}"),
-    do: {:context, Map.put(context, :expecting, {__MODULE__, {:translation_for, translation}})}
+         timeout_after <- (DateTime.utc_now |> DateTime.to_unix) + 30,
+    do: {:context, Map.put(context, :expecting, {__MODULE__, %{translation: translation, timeout_after: timeout_after}})}
   end
 
+  # Note: called directly from the GenServer so we return a bare state
+  # Maybe I should pass this through the switchoard to keep the same contract?
+  # The only problem is that this is part of a handle_info instead of a handle_call
+  # so it can't result in a {:reply, _, _} value...
   def translation_timeout_check(%{expecting: {__MODULE__, %{timeout_after: timestamp}}}=state) do
     now = DateTime.utc_now |> DateTime.to_unix
     if timestamp < now do
       with :ok <- Walybot.TranslationQueue.unsubscribe_from_translations(),
-           {:ok, _} <- Telegram.send_message(state[:conversation_id], "Nevermind, it looks like you are busy. I'll pause your translations until you are ready. Just send /translate again to start."),
+           {:ok, _} <- Telegram.Bot.send_message(state[:conversation_id], "Nevermind, it looks like you are busy. I'll pause your translations until you are ready. Just send /translate again to start."),
       do: Map.delete(state, :expecting)
     else
       state
